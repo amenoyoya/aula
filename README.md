@@ -19,7 +19,14 @@ Make sure `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxi
 
 Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 
-### Build LuaJIT
+### Build external libraries
 ```powershell
-> .\LuaJIT-2.1.0-beta3\make.bat
+# Build LuaJIT
+> .\extlib\build_luajit.bat
+
+# Build tolua++
+> .\extlib\build_tolua.bat
+
+# Build zlib
+> .\extlib\build_zlib.bat
 ```
