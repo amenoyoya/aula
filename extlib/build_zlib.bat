@@ -10,3 +10,4 @@ copy zconf.h.in zconf.h
 lib.exe /OUT:"zlib.lib" /NOLOGO *.obj
 
 del *.obj
+move zlib.lib ..\..\dist\lib\x86\
