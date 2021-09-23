@@ -1,0 +1,32 @@
+#include <windows.h>
+#include "version.h"
+
+100 ICON DISCARDABLE "icon/SeleneTalk.ico"
+
+VS_VERSION_INFO    VERSIONINFO
+FILEVERSION        VERSION_INF
+PRODUCTVERSION     VERSION_INF
+FILEFLAGSMASK      VS_FFI_FILEFLAGSMASK
+FILEFLAGS          0x0L
+FILEOS             VOS_NT_WINDOWS32
+FILETYPE           VFT_APP
+FILESUBTYPE        VFT2_UNKNOWN
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "000004b0"
+		BEGIN
+			VALUE "FileDescription",  "A script engine based on the customized LuaJIT."
+			VALUE "FileVersion",      VERSION_STR
+			VALUE "InternalName",     "SeleneTalk.exe"
+			VALUE "LegalCopyright",   "Copyright (C) 2017 yoya."
+			VALUE "OriginalFilename", "SeleneTalk.exe"
+			VALUE "ProductName",      "SeleneTalk3"
+			VALUE "ProductVersion",   VERSION_STR
+		END
+	END
+	BLOCK "VarFileInfo"
+	BEGIN
+		VALUE "Translation", 0x0, 1200
+	END
+END

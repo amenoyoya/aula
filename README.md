@@ -30,3 +30,8 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 # Build zlib
 > .\extlib\build_zlib.bat
 ```
+
+### Build Aula libraries
+```powershell
+> .\lib\build_library.bat
+```
