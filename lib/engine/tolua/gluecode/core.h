@@ -1,6 +1,6 @@
 /*
 ** Lua binding: libAula_core
-** Generated automatically by tolua++-1.0.93 on Thu Sep 23 19:49:59 2021.
+** Generated automatically by tolua++-1.0.93 on Thu Sep 23 20:38:57 2021.
 */
 
 /* Exported function */

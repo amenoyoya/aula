@@ -5,7 +5,7 @@ A Lua script engine for a standalone utility application
 ## Environment
 
 - OS:
-    - Windows 10 64bit
+    - Windows 10
 - Build tools:
     - Microsoft Visual C++ 2019 Community Edition
 - Editor:
@@ -35,3 +35,18 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 ```powershell
 > .\lib\build_library.bat
 ```
+
+### Build Aula main engine
+```powershell
+> .\src\build.bat
+
+# => Aula engine: dist/bin/x86/aula.exe
+```
+
+***
+
+## TODO
+
+- 64bit support
+- try [sol2](https://github.com/ThePhD/sol2) library
+- try [moonjit](https://github.com/moonjit/moonjit) instead of luajit
