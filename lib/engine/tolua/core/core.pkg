@@ -1,0 +1,102 @@
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2
+
+typedef char           s8;
+typedef unsigned char  u8;
+typedef short          s16;
+typedef unsigned short u16;
+typedef long           s32;
+typedef unsigned long  u32;
+
+namespace Aula{
+    bool isSameString(const char *s1, const char *s2, u32 len=(u32)-1);
+    
+    namespace Encoding{
+        enum Type{
+            UNKNOWN,
+            BINARY,
+            ANSI,
+            SJIS,
+            JIS,
+            EUC,
+            ISO2022JP,
+            UTF8,
+            UTF16BE,
+            UTF16LE,
+            UTF32BE,
+            UTF32LE
+        };
+        
+        string getName(const char *target);
+        s8 isUTF8(const string &target);
+        string encode(const char *target, u8 toEncoding, u8 fromEncoding=UNKNOWN);
+        string toUTF8(const char *target, u8 fromEncoding=UNKNOWN);
+    }
+    
+    namespace Console{
+        void writeLine(const char *str);
+        void write(const char *str);
+        
+        enum Color{
+            BLACK,
+            BLUE,
+            GREEN,
+            CYAN,
+            RED,
+            PURPLE,
+            YELLOW,
+            WHITE
+        };
+        
+        bool setAttribute(s8 wFore=WHITE, s8 wBlack=BLACK, bool bHigh=false, bool bUnderscore=false);
+        bool setCursorPosition(s16 shXPos, s16 shYPos);
+        bool clear();
+        bool isKeyPressed();
+        s32 getPressedKey();
+    }
+    
+    namespace System{
+        s32 execute(const char *cmd);
+        void sleep(u32 msec);
+        u32 getTime();
+        bool setEnvironmentVariable(const char *name, const char *val);
+        string getEnvironmentVariable(const char *name);
+        bool setCurrentDirectory(const char *dir);
+        string getCurrentDirectory();
+    }
+    
+    struct Object{
+        enum Status{NONE, ACTIVE, FAILED, FINISHED, BUSY};
+    };
+    
+    u8 getState(Object *obj);
+    string getMessage(Object *obj);
+    
+    class LibraryLoader: public Object {
+    public:
+        LibraryLoader();
+        explicit LibraryLoader(const char *path);
+        ~LibraryLoader();
+        
+        bool open(const char *path);
+        void close();
+    };
+    
+    class Randomizer: public Object {
+    public:
+        explicit Randomizer(s32 _seed=(s32)time(nullptr));
+        explicit Randomizer(s32 seedsNum, s32 seeds[seedsNum]);
+        
+        void seed(s32 _seed);
+        void seed(s32 seedsNum, s32 seeds[seedsNum]);
+        
+        u32 get();
+        u32 get(u32 r);
+        s32 get(s32 min, s32 max);
+    };
+    
+    namespace Engine{
+        bool encodeDirectory(const char *dirPath, const char *outputFile, const char *key="", u8 level=6);
+    }
+}

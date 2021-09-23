@@ -1,0 +1,17 @@
+local def compile(infile, outfile, chunkname){
+	print("compile: "..infile)
+	local fh, msg = io.open(infile, "r")
+	if !fh { error(msg) }
+	local func = assert(loadstring(fh->read"*a", chunkname))
+	local dump, data = string.dump(func), ""
+	for i = 1, dump->len() {
+		data = data..dump->byte(i, i)..","
+	}
+	fh->close()
+	fh, msg = io.open(outfile, "w")
+	if !fh { error(msg) }
+	fh->write(data)
+	fh->close()
+}
+
+compile("Startup.sltk", "Startup.cpp", "<SeleneTalk/Core/Startup>")

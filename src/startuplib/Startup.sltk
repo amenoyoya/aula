@@ -1,0 +1,10 @@
+/* Sltk名前空間省略 */
+using(Sltk)
+
+local dir = Path.getParent(os.argv[0])
+
+/* モジュールパス追加 */
+package.loadpath[#package.loadpath + 1] = dir
+
+/* Libraryパス追加 */
+package.loadpath[#package.loadpath + 1] = Path.appendSlash(dir).."Library"

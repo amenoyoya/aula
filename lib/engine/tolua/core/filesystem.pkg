@@ -1,0 +1,61 @@
+namespace Aula{
+    namespace Path{
+        string getLeaf(const char *path);
+        string getStem(const char *path);
+        string getExtension(const char *path);
+        string convert(const char *path);
+        bool isSame(const char *path1, const char *path2, u32 len=(u32)-1);
+        string getParent(const char *path, bool real=true);
+        bool isFile(const char *path);
+        bool isDirectory(const char *path);
+        string complete(const char *path);
+        string appendSlash(const char *path);
+        string removeSlash(string path);
+    }
+    
+    class File: public Object {
+    public:
+        File();
+        explicit File(const char *path, const char *mode="r");
+        explicit File(u32 pFile, u8 closeMode);
+        ~File();
+        
+        bool open(const char *path, const char *mode="r");
+        bool open(u32 pFile, u8 closeMode);
+        
+        void close();
+        
+        u32 getSize();
+        string readLine();
+        s8 readChar();
+        bool writeLine(const char *text);
+        bool writeChar(s8 c);
+        string readAll();
+        bool seek(s32 move=0L, u8 from=SEEK_SET);
+        u32 getPosition();
+        bool flush();
+    };
+    
+    class FileEnumerator: public Object {
+    public:
+        FileEnumerator();
+        explicit FileEnumerator(const char *dir);
+        ~FileEnumerator();
+        
+        bool open(const char *dir);
+        void close();
+        
+        bool toNext();
+        string getName() const;
+        string getPath() const;
+    };
+    
+    bool copyFile(const char *src, const char *dest, bool overwrite=true);
+    bool removeFile(const char *file);
+    bool moveFile(const char *src, const char *dest, bool overwrite=true);
+    
+    bool createDirectory(const char *dir);
+    bool copyDirectory(const char *src, const char *dest);
+    bool removeDirectory(const char *dir);
+    bool moveDirectory(const char *src, const char *dest);
+}
