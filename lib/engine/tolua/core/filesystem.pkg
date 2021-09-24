@@ -5,7 +5,7 @@ namespace Aula{
         string getExtension(const char *path);
         string convert(const char *path);
         bool isSame(const char *path1, const char *path2, u32 len=(u32)-1);
-        string getParent(const char *path, bool real=true);
+        string getParentDirectory(const char *path, bool real=true);
         bool isFile(const char *path);
         bool isDirectory(const char *path);
         string complete(const char *path);

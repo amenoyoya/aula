@@ -166,7 +166,7 @@ static int script_loader(lua_State *L){
     // 呼び出し元スクリプトのディレクトリからの相対パスに変換
     if(lua_getstack(L, 2, &debug)){
         lua_getinfo(L, "S", &debug);
-        string dir = Path::getParent(debug.source, false);
+        string dir = Path::getParentDirectory(debug.source, false);
         filename = (dir == ""? "": Path::appendSlash(dir)) + filename;
     }
     return _require(L, filename);

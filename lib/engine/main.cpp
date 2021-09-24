@@ -115,14 +115,14 @@ namespace Aula{
                 u8 mode = isSameString(ext, ".lua")? 0: (isSameString(ext, ".sym")? 1: 2);
                 // スクリプトファイルロード
                 if(mode < 2 && pReader->openFile(path)){
-                    System::setCurrentDirectory(Path::getParent(path));
+                    System::setCurrentDirectory(Path::getParentDirectory(path));
                     return _pReader? mode: loadScriptFile(L, pReader, mode);
                 }
                 // アーカイブファイルロード
                 string key = getPassword(path); // 復号化キー取得
                 for(u32 i = 0; i < 2; ++i){
                     if(pReader->openFileInZip(path, mainFiles[i], key)){
-                        System::setCurrentDirectory(Path::getParent(path));
+                        System::setCurrentDirectory(Path::getParentDirectory(path));
                         pReader->setDefaultArchive(path, key); // 復号化キーを保存
                         return _pReader? modes[i]: loadScriptFile(L, pReader, modes[i]);
                     }

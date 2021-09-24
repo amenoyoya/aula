@@ -28,7 +28,7 @@ namespace Aula{
             UTF32LE
         };
         
-        string getName(const char *target);
+        string getEncodingName(const char *target);
         s8 isUTF8(const string &target);
         string encode(const char *target, u8 toEncoding, u8 fromEncoding=UNKNOWN);
         string toUTF8(const char *target, u8 fromEncoding=UNKNOWN);
