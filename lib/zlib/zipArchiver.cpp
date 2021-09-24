@@ -68,7 +68,7 @@ namespace Aula{
         else if(mode & ZLIB_FILEFUNC_MODE_CREATE) mode_fopen = _STRING("wb");
         
         if(mode_fopen){
-            if(mode_fopen[0] == 'w') createDirectory(Path::getParent(filename)); // 親ディレクトリ自動生成
+            if(mode_fopen[0] == 'w') createDirectory(Path::getParentDirectory(filename)); // 親ディレクトリ自動生成
             file = FOPEN(fopen, filename, mode_fopen);
         }
         return file;

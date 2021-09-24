@@ -81,7 +81,7 @@ namespace Aula{
         void initialize();
         
         // 対象文字列のエンコーディング名取得
-        string getName(const string &target);
+        string getEncodingName(const string &target);
         
         // UTF-8文字列か判定(0=YES, 1=BOM付, -1=NO)
         s8 isUTF8(const string &target);
@@ -142,7 +142,7 @@ namespace Aula{
         
         // コンソールテキストの色・属性を設定する
         // 引数 : 前景色, 背景色, 高輝度フラグ, 下線フラグ
-        bool setAttribute(s8 wFore=WHITE, s8 wBlack=BLACK, bool bHigh=false, bool bUnderscore=false);
+        bool setAttribute(s8 wFore=WHITE, s8 wBack=BLACK, bool bHigh=false, bool bUnderscore=false);
         
         // カーソルの位置をセットする
         bool setCursorPosition(s16 shXPos, s16 shYPos);

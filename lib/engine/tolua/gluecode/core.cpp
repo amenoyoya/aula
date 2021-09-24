@@ -1,6 +1,6 @@
 /*
 ** Lua binding: libAula_core
-** Generated automatically by tolua++-1.0.93 on Thu Sep 23 20:38:57 2021.
+** Generated automatically by tolua++-1.0.93 on Fri Sep 24 16:23:29 2021.
 */
 
 #ifndef __cplusplus
@@ -157,9 +157,9 @@ tolua_lerror:
 }
 #endif //#ifndef TOLUA_DISABLE
 
-/* function: Aula::Encoding::getName */
-#ifndef TOLUA_DISABLE_tolua_libAula_core_Aula_Encoding_getName00
-static int tolua_libAula_core_Aula_Encoding_getName00(lua_State* tolua_S)
+/* function: Aula::Encoding::getEncodingName */
+#ifndef TOLUA_DISABLE_tolua_libAula_core_Aula_Encoding_getEncodingName00
+static int tolua_libAula_core_Aula_Encoding_getEncodingName00(lua_State* tolua_S)
 {
 #ifndef TOLUA_RELEASE
  tolua_Error tolua_err;
@@ -173,14 +173,14 @@ static int tolua_libAula_core_Aula_Encoding_getName00(lua_State* tolua_S)
  {
   const char* target = ((const char*)  tolua_tostring(tolua_S,1,0));
   {
-   string tolua_ret = (string)  Aula::Encoding::getName(target);
+   string tolua_ret = (string)  Aula::Encoding::getEncodingName(target);
    tolua_pushcppstring(tolua_S,(const char*)tolua_ret);
   }
  }
  return 1;
 #ifndef TOLUA_RELEASE
  tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'getName'.",&tolua_err);
+ tolua_error(tolua_S,"#ferror in function 'getEncodingName'.",&tolua_err);
  return 0;
 #endif
 }
@@ -1549,9 +1549,9 @@ tolua_lerror:
 }
 #endif //#ifndef TOLUA_DISABLE
 
-/* function: Aula::Path::getParent */
-#ifndef TOLUA_DISABLE_tolua_libAula_core_Aula_Path_getParent00
-static int tolua_libAula_core_Aula_Path_getParent00(lua_State* tolua_S)
+/* function: Aula::Path::getParentDirectory */
+#ifndef TOLUA_DISABLE_tolua_libAula_core_Aula_Path_getParentDirectory00
+static int tolua_libAula_core_Aula_Path_getParentDirectory00(lua_State* tolua_S)
 {
 #ifndef TOLUA_RELEASE
  tolua_Error tolua_err;
@@ -1567,14 +1567,14 @@ static int tolua_libAula_core_Aula_Path_getParent00(lua_State* tolua_S)
   const char* path = ((const char*)  tolua_tostring(tolua_S,1,0));
   bool real = ((bool)  tolua_toboolean(tolua_S,2,true));
   {
-   string tolua_ret = (string)  Aula::Path::getParent(path,real);
+   string tolua_ret = (string)  Aula::Path::getParentDirectory(path,real);
    tolua_pushcppstring(tolua_S,(const char*)tolua_ret);
   }
  }
  return 1;
 #ifndef TOLUA_RELEASE
  tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'getParent'.",&tolua_err);
+ tolua_error(tolua_S,"#ferror in function 'getParentDirectory'.",&tolua_err);
  return 0;
 #endif
 }
@@ -5450,7 +5450,7 @@ TOLUA_API int tolua_libAula_core_open (lua_State* tolua_S)
     tolua_constant(tolua_S,"UTF16LE",Aula::Encoding::UTF16LE);
     tolua_constant(tolua_S,"UTF32BE",Aula::Encoding::UTF32BE);
     tolua_constant(tolua_S,"UTF32LE",Aula::Encoding::UTF32LE);
-    tolua_function(tolua_S,"getName",tolua_libAula_core_Aula_Encoding_getName00);
+    tolua_function(tolua_S,"getEncodingName",tolua_libAula_core_Aula_Encoding_getEncodingName00);
     tolua_function(tolua_S,"isUTF8",tolua_libAula_core_Aula_Encoding_isUTF800);
     tolua_function(tolua_S,"encode",tolua_libAula_core_Aula_Encoding_encode00);
     tolua_function(tolua_S,"toUTF8",tolua_libAula_core_Aula_Encoding_toUTF800);
@@ -5545,7 +5545,7 @@ TOLUA_API int tolua_libAula_core_open (lua_State* tolua_S)
     tolua_function(tolua_S,"convert",tolua_libAula_core_Aula_Path_convert00);
     tolua_function(tolua_S,"isSame",tolua_libAula_core_Aula_Path_isSame00);
     tolua_function(tolua_S,"isSame",tolua_libAula_core_Aula_Path_isSame01);
-    tolua_function(tolua_S,"getParent",tolua_libAula_core_Aula_Path_getParent00);
+    tolua_function(tolua_S,"getParentDirectory",tolua_libAula_core_Aula_Path_getParentDirectory00);
     tolua_function(tolua_S,"isFile",tolua_libAula_core_Aula_Path_isFile00);
     tolua_function(tolua_S,"isDirectory",tolua_libAula_core_Aula_Path_isDirectory00);
     tolua_function(tolua_S,"complete",tolua_libAula_core_Aula_Path_complete00);

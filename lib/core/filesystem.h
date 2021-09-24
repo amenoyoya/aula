@@ -21,7 +21,7 @@ namespace Aula{
         
         // 親ディレクトリを取得
         // real: trueなら実際の親ディレクトリ, falseなら一番後ろの'/'まで単なる文字列の切り出し
-        string getParent(const string &path, bool real=true);
+        string getParentDirectory(const string &path, bool real=true);
         
         // ファイルorディレクトリか判定
         bool isFile(const string &path);

@@ -70,7 +70,7 @@ namespace Aula{
             return "";
         }
         
-        string getParent(const string &path, bool real){
+        string getParentDirectory(const string &path, bool real){
             if(real){
                 string realpath = complete(path);
                 u32 size = realpath.size();
@@ -111,7 +111,7 @@ namespace Aula{
                         char c = (dest.empty()? 0: *(dest.end()-1));
                         p += 3;
                         if(!dest.empty()) dest.erase(dest.end()-1);
-                        dest = getParent(dest, false);
+                        dest = getParentDirectory(dest, false);
                         if(c) dest.push_back(c);
                         continue;
                     }
@@ -231,7 +231,7 @@ namespace Aula{
             }
             closeMode = 2;
         }else{
-            if(mode[0] == 'w') createDirectory(Path::getParent(path)); // 親ディレクトリを自動生成
+            if(mode[0] == 'w') createDirectory(Path::getParentDirectory(path)); // 親ディレクトリを自動生成
             if(nullptr == (fp = FOPEN(fopen, path, mode))){
                 _state = FAILED;
                 _message = "failed to open file '"+path+"'";

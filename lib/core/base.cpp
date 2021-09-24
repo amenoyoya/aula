@@ -43,7 +43,7 @@ namespace Aula{
             setlocale(LC_ALL, "");
         }
         
-        string getName(const string &target){
+        string getEncodingName(const string &target){
             return toUTF8(babel::profile_for_UI::get_base_encoding_name(babel::analyze_base_encoding(target)));
         }
         
