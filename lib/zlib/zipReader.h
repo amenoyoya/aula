@@ -27,12 +27,12 @@ namespace Aula{
         
         u32 getSize(){ return size; }
         string readLine();
-        s8 readChar(){
+        i8 readChar(){
             return _state == ACTIVE? bin[cur++]: 0;
         }
         u32 read(void *dest, u32 size, u32 n=1);
         string readAll();
-        bool seek(s32 move, u8 from=SEEK_SET);
+        bool seek(i32 move, u8 from=SEEK_SET);
         u32 getPosition(){ return cur; }
     private:
         string    bin,    // ファイル内容をstringで保持
@@ -93,7 +93,7 @@ namespace Aula{
         string readLine(){
             return (pFile? pFile->readLine(): "");
         }
-        s8 readChar(){
+        i8 readChar(){
             return (pFile? pFile->readChar(): 0);
         }
         u32 read(void *dest, u32 size, u32 n=1){
@@ -102,7 +102,7 @@ namespace Aula{
         string readAll(){
             return (pFile? pFile->readAll(): "");
         }
-        bool seek(s32 move, u8 from=SEEK_SET){
+        bool seek(i32 move, u8 from=SEEK_SET){
             return (pFile? pFile->seek(move, from): false);
         }
         u32 getPosition(){

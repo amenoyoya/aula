@@ -74,7 +74,7 @@ namespace Aula{
         
         u32 getSize();
         string readLine();
-        s8 readChar();
+        i8 readChar();
         string readAll();
         bool seek(s32 move, u8 from=SEEK_SET);
         u32 getPosition();
@@ -97,7 +97,7 @@ namespace Aula{
         string getCurrentFilePath() const;
         u32 getSize();
         string readLine();
-        s8 readChar();
+        i8 readChar();
         string readAll();
         bool seek(s32 move, u8 from=SEEK_SET);
         u32 getPosition();

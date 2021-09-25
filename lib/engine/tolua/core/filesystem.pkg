@@ -27,9 +27,9 @@ namespace Aula{
         
         u32 getSize();
         string readLine();
-        s8 readChar();
+        i8 readChar();
         bool writeLine(const char *text);
-        bool writeChar(s8 c);
+        bool writeChar(i8 c);
         string readAll();
         bool seek(s32 move=0L, u8 from=SEEK_SET);
         u32 getPosition();

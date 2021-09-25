@@ -96,7 +96,7 @@ static int readZipArchiverCurrentFile(lua_State *L){
 // * dir: ディレクトリ
 // * nest: 列挙深度(0なら列挙しない，マイナスなら無制限)
 // * opt: 列挙オプション(2=全て列挙，1=ファイルのみ列挙，0=ディレクトリのみ列挙)
-static void enumfiles(lua_State *L, u32 &index, const string &dir, s32 nest, u8 opt){
+static void enumfiles(lua_State *L, u32 &index, const string &dir, i32 nest, u8 opt){
     if(nest == 0) return;
     
     FileEnumerator f(dir);
@@ -132,6 +132,6 @@ static int enumerateFiles(lua_State *L){
     u32 index = 0;
     lua_createtable(L, 0, 0);
     enumfiles(L, index, lua_tostring(L, 1), lua_type(L, 2) == LUA_TNUMBER? lua_tointeger(L, 2): 1,
-        lua_type(L, 3) == LUA_TNUMBER? (s8)lua_tointeger(L, 3): 2);
+        lua_type(L, 3) == LUA_TNUMBER? (i8)lua_tointeger(L, 3): 2);
     return 1;
 }

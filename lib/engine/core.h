@@ -21,7 +21,7 @@ extern "C"{
         const u8  nMaxReadSize = 6;
         char      chBuffer[nMaxReadSize], *src = (char*)source;
         u32       nReadDataSize = 0, i = 0;
-        s32       iCh1, sizeBytes = 0;
+        i32       iCh1, sizeBytes = 0;
         wchar_t   wcWork1 = 0, wcWork2 = 0, wcWork3 = 0;
         // BOMの除去
         if(size > 2 && ((*src == '\xef') && (*(src + 1) == '\xbb') && (*(src + 2) == '\xbf'))){
@@ -34,7 +34,7 @@ extern "C"{
             memcpy(chBuffer, src + cursor, nReadDataSize);
             memset(chBuffer + nReadDataSize, 0, sizeof(chBuffer) - nReadDataSize);
             /* data size を調べる */
-            iCh1 = ((s32)(*chBuffer)) & 0x00ff;
+            iCh1 = ((i32)(*chBuffer)) & 0x00ff;
             iCh1 = ~iCh1;    /* ビット反転 */
             if(iCh1 & 0x0080) sizeBytes = 1; /* 0aaabbbb */
             else if (iCh1 & 0x0040) return false; /* error */
@@ -96,7 +96,7 @@ extern "C"{
     inline __export bool wideStringToUTF8(const wchar_t *source, char *dest, u32 size){
         wchar_t   wcWork1 = 0, *src = (wchar_t*)source;
         u32       i = 0;
-        s32       sizeBytes = 0;
+        i32       sizeBytes = 0;
         char      chWork1 = 0, chWork2 = 0, chWork3 = 0;
         
         for(u32 cursor = 0; cursor < size; ++cursor){

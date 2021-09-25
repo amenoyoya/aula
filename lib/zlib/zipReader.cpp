@@ -69,7 +69,7 @@ namespace Aula{
         return ret;
     }
     
-    bool ZipFileReader::seek(s32 mov, u8 from){
+    bool ZipFileReader::seek(i32 mov, u8 from){
         if(_state != ACTIVE) return false;
         switch(from){
         case SEEK_SET:
@@ -78,7 +78,7 @@ namespace Aula{
             break;
         case SEEK_CUR:
             if(mov < 0){
-                if((s32)cur + mov < 0) cur = 0;
+                if((i32)cur + mov < 0) cur = 0;
                 else cur += mov;
             }else{
                 cur += mov;
