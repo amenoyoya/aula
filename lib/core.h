@@ -9,7 +9,8 @@
     #pragma comment(lib, "winmm.lib")
 #endif
 
-#include "core/filesystem.h"
+#include "core/io/filesystem.h"
+#include "core/system/base.h"
 
 /*** アプリケーションMain関数マクロ ***/
 #ifdef _WINDOWS

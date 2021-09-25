@@ -10,7 +10,7 @@ namespace Aula {
     namespace IO {
         #ifdef _WINDOWS
             /* Windows版FileEnumerator */
-            bool FileEnumerator::open(const string &_dir) {
+            bool FileEnumerator::open(const std::string &_dir) {
                 WIN32_FIND_DATA info;
                 
                 close();
@@ -49,7 +49,7 @@ namespace Aula {
             }
         #else
             /* UNIX版FileEnumerator */
-            bool FileEnumerator::open(const string &_dir) {
+            bool FileEnumerator::open(const std::string &_dir) {
                 close();
                 dir = Path::appendSlash(_dir);
                 if (0 == (handle = (u32)opendir(dir.c_str()))) {

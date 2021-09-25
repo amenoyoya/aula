@@ -2,7 +2,7 @@
 
 namespace Aula {
     namespace String {
-        bool isEqualFold(const string &s1, const string &s2, u32 len) {
+        bool isEqualFold(const std::string &s1, const std::string &s2, u32 len) {
             unsigned char *p1 = (unsigned char*)s1.c_str(), *p2 = (unsigned char*)s2.c_str();
             u32 i = 0;
             
@@ -16,11 +16,11 @@ namespace Aula {
             return true;
         }
         
-        string replace(string str, const string &oldString, const string &newString){
+        std::string replace(std::string str, const std::string &oldString, const std::string &newString){
             size_t p = str.find(oldString);
             const size_t oldStringLength = oldString.length(), newStringLength = newString.length();
             
-            while(p != string::npos){
+            while(p != std::string::npos){
                 str.replace(p, oldStringLength, newString);
                 p = str.find(oldString, p + newStringLength);
             }

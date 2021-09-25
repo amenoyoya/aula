@@ -4,13 +4,10 @@ cd %~dp0
 call ..\vcvars.bat
 
 :: build core library
-cd .\core\string
+cd %~dp0\core\string
 %compile% *.cpp
 
 cd ..\encoding
-%compile% *.cpp
-
-cd ..\console
 %compile% *.cpp
 
 cd ..\system
@@ -23,8 +20,8 @@ cd ..\io
 %compile% *.cpp
 
 cd ..
-lib.exe /OUT:"libaula_core.lib" /NOLOGO string\*.obj encoding\*.obj console\*.obj system\*.obj path\*.obj io\*.obj
-del string\*.obj encoding\*.obj console\*.obj system\*.obj path\*.obj io\*.obj
+lib.exe /OUT:"libaula_core.lib" /NOLOGO string\*.obj encoding\*.obj system\*.obj path\*.obj io\*.obj
+del string\*.obj encoding\*.obj system\*.obj path\*.obj io\*.obj
 move libaula_core.lib ..\..\dist\lib\x86\
 
 :: build zlib library
@@ -33,10 +30,9 @@ move libaula_core.lib ..\..\dist\lib\x86\
 :: del *.obj
 :: move libaula_zlib.lib ..\dist\lib\x86\
 
-:: build aula engine library
-:: call engine/_generate_code.bat
-:: cd %~dp0
-:: %compile% engine/core.cpp engine/main.cpp
-:: lib.exe /OUT:"libaula_engine.lib" /NOLOGO *.obj
-:: del *.obj
-:: move libaula_engine.lib ..\dist\lib\x86\
+:: build aula lua engine library
+cd %~dp0
+%compile% lua/*.cpp
+lib.exe /OUT:"libaula_lua.lib" /NOLOGO *.obj
+del *.obj
+move libaula_lua.lib ..\dist\lib\x86\

@@ -16,7 +16,7 @@ namespace Aula {
         #endif
         #define FOPEN(open, path, mode) _FOPEN(open)(ENCODE(path).c_str(), ENCODE(mode).c_str())
         
-        bool File::open(const string &path, const string &mode){
+        bool File::open(const std::string &path, const std::string &mode){
             close();
             if(mode[0] == 'p'){
                 if(nullptr == (fp = FOPEN(popen, path, mode.substr(1)))){
@@ -45,8 +45,8 @@ namespace Aula {
         void File::close(){
             _state = NONE;
             _message.clear();
-            if(fp){
-                if(closeMode == 1) fclose(fp);
+            if (fp) {
+                if (closeMode == 1) fclose(fp);
                 else if(closeMode == 2)
                     #ifdef _MSC_VER
                         _pclose(fp);
@@ -58,10 +58,10 @@ namespace Aula {
             closeMode = 0;
         }
         
-        string File::readLine(){
+        std::string File::readLine(){
             if(!fp) return "";
             
-            string ret;
+            std::string ret;
             ret.reserve(128);
             for(char c = readChar(); c != EOF; c = readChar()){
                 if(c == '\r'){
@@ -83,24 +83,19 @@ namespace Aula {
             return size;
         }
 
-        unique_ptr<Binary> File::read(u32 size, u32 n) {
+        std::unique_ptr<Binary> File::read(u32 n, u32 size) {
             if (!fp) return nullptr;
             
             Binary *bin = new Binary(size * n);
-            u32 readedSize = fread(bin->getPointer(), size, n, fp);
+            u32 readedSize = fread((void *)bin->getPointer(), size, n, fp);
 
             bin->resize(readedSize);
-            return unique_ptr<Binary>(bin);
+            return std::unique_ptr<Binary>(bin);
         }
-        
-        string File::readAll(){
-            if(!fp) return "";
-            
-            string ret;
-            u32 size = getSize();
-            ret.resize(size);
-            read((char*)&ret[0], sizeof(char), size);
-            return ret;
-        }
+
+
+        std::unique_ptr<File> Stdout(new File(stdout));
+        std::unique_ptr<File> Stderr(new File(stderr));
+        std::unique_ptr<File> Stdin(new File(stdin));
     }
 }

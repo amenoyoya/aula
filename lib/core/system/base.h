@@ -6,7 +6,7 @@ namespace Aula {
     /// システム関連
     namespace System {
         /// コマンド実行
-        inline i32 execute(const string &cmd) {
+        inline i32 execute(const std::string &cmd) {
             #ifdef _WINDOWS
                 #ifdef _MSC_VER
                     return _wsystem(Encoding::utf8ToWideString(cmd).c_str());
@@ -33,7 +33,7 @@ namespace Aula {
 
         /* 環境変数 */
         /// 環境変数設定
-        inline bool setEnvironmentVariable(const string &name, const string &val) {
+        inline bool setEnvironmentVariable(const std::string &name, const std::string &val) {
             #ifdef _WINDOWS
                 return FALSE != SetEnvironmentVariable(Encoding::utf8ToWideString(name).c_str(), Encoding::utf8ToWideString(val).c_str());
             #else
@@ -42,12 +42,12 @@ namespace Aula {
         }
         
         /// 環境変数取得
-        string getEnvironmentVariable(const string &name);
+        std::string getEnvironmentVariable(const std::string &name);
         
         
         /* 作業ディレクトリ */
         /// 作業ディレクトリ変更
-        inline bool setCurrentDirectory(const string &dir) {
+        inline bool setCurrentDirectory(const std::string &dir) {
             #ifdef _WINDOWS
                 return FALSE != SetCurrentDirectory(Encoding::utf8ToWideString(dir).c_str());
             #else
@@ -56,6 +56,6 @@ namespace Aula {
         }
         
         /// 作業ディレクトリ取得
-        string getCurrentDirectory();
+        std::string getCurrentDirectory();
     }
 }

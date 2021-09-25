@@ -105,8 +105,8 @@ namespace Aula {
             pos = pos + size;
         }
         
-        string Binary::getString(u32 size) {
-            string ret;
+        std::string Binary::getString(u32 size) {
+            std::string ret;
             
             if (size == 0) return "";
             if (_state == Mode::ALLOCATE && pos + size > bin.size()) return "";
@@ -152,7 +152,7 @@ namespace Aula {
             }
         }
         
-        void Binary::encode(const string &key, u32 KEYSIZE) {
+        void Binary::encode(const std::string &key, u32 KEYSIZE) {
             if (_state == Mode::ALLOCATE) {
                 u32 crc = getCRC32(bin.c_str(), bin.size()); // バイナリのCRC32ハッシュを計算
                 u32 size = bin.size(), p = 0, keysize = key.size();
@@ -170,7 +170,7 @@ namespace Aula {
             }
         }
         
-        bool Binary::decode(const string &key, u32 KEYSIZE) {
+        bool Binary::decode(const std::string &key, u32 KEYSIZE) {
             if (_state == Mode::ALLOCATE) {
                 if (bin.size() < 4) return false;
                 // CRC32チェックサム(4byte)以外の部分をデコードする
