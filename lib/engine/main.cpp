@@ -51,7 +51,7 @@ namespace Aula{
         }
         
         /* Luaファイルをロード */
-        s8 loadScriptFile(lua_State *L, FileReader *pReader, u8 mode){
+        i8 loadScriptFile(lua_State *L, FileReader *pReader, u8 mode){
             if(!pReader || getState(pReader) != Object::ACTIVE) return -1;
             
             if(mode > 1){ // バイトコードはそのまま実行
@@ -59,10 +59,10 @@ namespace Aula{
                 string buf;
                 buf.resize(size);
                 pReader->read((void*)&buf[0], size);
-                return (s8)loadScript(L, buf.c_str(), size, pReader->getCurrentFilePath());
+                return (i8)loadScript(L, buf.c_str(), size, pReader->getCurrentFilePath());
             }
             // Luaファイル
-            return (s8)loadScript(L, Encoding::toUTF8(pReader->readAll()).c_str(), u32(-1), pReader->getCurrentFilePath());
+            return (i8)loadScript(L, Encoding::toUTF8(pReader->readAll()).c_str(), u32(-1), pReader->getCurrentFilePath());
         }
         
         
@@ -77,7 +77,7 @@ namespace Aula{
             
             File file(arc, "rb");
             string pass, bin;
-            s32 size = 0, allsize = 0;
+            i32 size = 0, allsize = 0;
             
             if(getState(&file) == Object::FAILED) return "";
             file.seek(-1 * zipsize, SEEK_END); // zipデータの分だけ前に戻る
@@ -91,7 +91,7 @@ namespace Aula{
             file.read((void*)&bin[0], allsize);
             // 復号化
             pass.reserve(size);
-            for(s32 i = 0; i < allsize; i += 4){
+            for(i32 i = 0; i < allsize; i += 4){
                 char buf = bin[i];
                 
                 if((i/4) % 2 == 0) buf = ~buf;
@@ -104,7 +104,7 @@ namespace Aula{
         }
         
         /* メインスクリプトをロード */
-        s8 load(lua_State *L, const string &path, FileReader *_pReader){
+        i8 load(lua_State *L, const string &path, FileReader *_pReader){
             FileReader *pReader = _pReader? _pReader: getFileReader(L);
             
             string mainFiles[] = { "__main.lua", "__main.sym" };

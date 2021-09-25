@@ -56,7 +56,7 @@ namespace Aula{
         // @param mode: 実行モード 0=Lua, 1=バイトコード
         // @return: -1=ファイルが存在しない, 1=成功,
         //           0=スクリプトロード失敗(Luaスタックの一番上にエラーメッセージ)
-        s8 loadScriptFile(lua_State *L, FileReader *pReader, u8 mode=0);
+        i8 loadScriptFile(lua_State *L, FileReader *pReader, u8 mode=0);
         
         /* メインスクリプトをロード */
         // path: file or directory (暗号化アーカイブなら復号化して実行)
@@ -65,7 +65,7 @@ namespace Aula{
         //          pReaderを指定した場合，ロードは行われない（後でloadScriptFileを実行する必要がある）
         // 戻り値（pReader未指定時）: -1=指定パスが無効, 0=ロード失敗, 1=成功
         // 戻り値（pReader指定時は実行モード）: -1=指定パスが無効, 0=Lua, 1=SeleneTalk, 2=バイトコード
-        s8 load(lua_State *L, const string &path, FileReader *pReader=nullptr);
+        i8 load(lua_State *L, const string &path, FileReader *pReader=nullptr);
         
         /* スタックの値（関数）を呼び出す */
         // 失敗した場合，Luaスタックの一番上にエラーメッセージがある

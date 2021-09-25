@@ -2,9 +2,9 @@
 #define SEEK_CUR 1
 #define SEEK_END 2
 
-typedef char           s8;
+typedef char           i8;
 typedef unsigned char  u8;
-typedef short          s16;
+typedef short          i16;
 typedef unsigned short u16;
 typedef long           s32;
 typedef unsigned long  u32;
@@ -29,7 +29,7 @@ namespace Aula{
         };
         
         string getEncodingName(const char *target);
-        s8 isUTF8(const string &target);
+        i8 isUTF8(const string &target);
         string encode(const char *target, u8 toEncoding, u8 fromEncoding=UNKNOWN);
         string toUTF8(const char *target, u8 fromEncoding=UNKNOWN);
     }
@@ -49,8 +49,8 @@ namespace Aula{
             WHITE
         };
         
-        bool setAttribute(s8 wFore=WHITE, s8 wBlack=BLACK, bool bHigh=false, bool bUnderscore=false);
-        bool setCursorPosition(s16 shXPos, s16 shYPos);
+        bool setAttribute(i8 wFore=WHITE, i8 wBlack=BLACK, bool bHigh=false, bool bUnderscore=false);
+        bool setCursorPosition(i16 shXPos, i16 shYPos);
         bool clear();
         bool isKeyPressed();
         s32 getPressedKey();
