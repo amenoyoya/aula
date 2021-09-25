@@ -9,7 +9,7 @@
 namespace Aula {
     namespace Path {
         /// '/'か'\\'まで後方から検索
-        static i32 getParentSep(const string &path, u32 size, i32 start = -1) {
+        static i32 getParentSep(const std::string &path, u32 size, i32 start = -1) {
             i32 p = (start == -1? size-1: start);
             
             while (path[p] != '/'
@@ -25,7 +25,7 @@ namespace Aula {
         }
         
         /// '.'まで後方から検索
-        static i32 getFirstDot(const string &path, u32 size, i32 start = -1) {
+        static i32 getFirstDot(const std::string &path, u32 size, i32 start = -1) {
             i32 p = (start == -1? size-1: start);
             
             while (p >= 0) {
@@ -42,12 +42,12 @@ namespace Aula {
             return -1;
         }
         
-        string getBaseName(const string &path) {
+        std::string getBaseName(const std::string &path) {
             u32 size = path.size();
             return size > 0? path.substr(getParentSep(path, size)+1): "";
         }
         
-        string getBaseStem(const string &path) {
+        std::string getBaseStem(const std::string &path) {
             u32 size = path.size();
             if (size > 0) {
                 i32 extp = getFirstDot(path, size),
@@ -57,7 +57,7 @@ namespace Aula {
             return "";
         }
         
-        string getExtension(const string &path) {
+        std::string getExtension(const std::string &path) {
             u32 size = path.size();
             
             if (size > 0) {
@@ -68,9 +68,9 @@ namespace Aula {
             return "";
         }
         
-        string getParentDirectory(const string &path, bool real) {
+        std::string getParentDirectory(const std::string &path, bool real) {
             if (real) {
-                string realpath = complete(path);
+                std::string realpath = complete(path);
                 u32 size = realpath.size();
                 if (size > 0) {
                     i32 p = getParentSep(realpath, size);
@@ -87,8 +87,8 @@ namespace Aula {
             }
         }
         
-        string convert(const string &path) {
-            string dest;
+        std::string convert(const std::string &path) {
+            std::string dest;
             char *p = (char*)path.c_str();
             bool sep = true;
             
@@ -124,7 +124,7 @@ namespace Aula {
             return dest;
         }
         
-        bool isSame(const string &path1, const string &path2, u32 len) {
+        bool isSame(const std::string &path1, const std::string &path2, u32 len) {
             unsigned char *p1 = (unsigned char*)path1.c_str(), *p2 = (unsigned char*)path2.c_str();
             u32 i = 0;
             
@@ -146,58 +146,58 @@ namespace Aula {
         
         #ifdef _WINDOWS
             /* Windows版ファイル判定,フルパス取得など */
-            bool isFile(const string &path) {
-                wstring p = Encoding::utf8ToWideString(path);
+            bool isFile(const std::string &path) {
+                std::wstring p = Encoding::utf8ToWideString(path);
                 return !PathIsDirectory(p.c_str()) && PathFileExists(p.c_str());
             }
             
-            bool isDirectory(const string &path) {
+            bool isDirectory(const std::string &path) {
                 return FALSE != PathIsDirectory(Encoding::utf8ToWideString(path).c_str());
             }
             
-            string complete(const string &path) {
+            std::string complete(const std::string &path) {
                 wchar_t dest[512];
                 GetFullPathName(Encoding::utf8ToWideString(path).c_str(), 512, dest, nullptr);
                 return Encoding::toUTF8(dest);
             }
             
-            string appendSlash(const string &path) {
+            std::string appendSlash(const std::string &path) {
                 auto it = path.end() - 1;
                 if (*it != '/' && *it != '\\') return path + "\\";
                 return path;
             }
             
-            string removeSlash(string path) {
+            std::string removeSlash(std::string path) {
                 auto it = path.end() - 1;
                 if (*it == '/' || *it == '\\') path.erase(it);
                 return path;
             }
         #else
             /* UNIX版ファイル判定,フルパス取得など */
-            bool isFile(const string &path) {
+            bool isFile(const std::string &path) {
                 struct stat buf;
                 return 0 == stat(path.c_str(), &buf) && S_ISREG(buf.st_mode);
             }
             
-            bool isDirectory(const string &path) {
+            bool isDirectory(const std::string &path) {
                 struct stat buf;
                 return 0 == stat(path.c_str(), &buf) && S_ISDIR(buf.st_mode);
             }
             
-            string complete(const string &path) {
+            std::string complete(const std::string &path) {
                 char *buf = realpath(path.c_str(), nullptr);
-                string ret = buf;
+                std::string ret = buf;
                 free(buf);
                 return ret;
             }
             
-            string appendSlash(const string &path){
+            std::string appendSlash(const std::string &path){
                 auto it = path.end() - 1;
                 if (*it != '/') return path + "/";
                 return path;
             }
             
-            string removeSlash(string path){
+            std::string removeSlash(std::string path){
                 auto it = path.end() - 1;
                 if (*it == '/') path.erase(it);
                 return path;

@@ -6,7 +6,7 @@
 
 namespace Aula {
     namespace System {
-        bool LibraryLoader::open(const string &path) {
+        bool LibraryLoader::open(const std::string &path) {
             close();
             #ifdef _WINDOWS
                 if (0 == (handle = (u32)LoadLibrary(Encoding::utf8ToWideString(path).c_str()))) {

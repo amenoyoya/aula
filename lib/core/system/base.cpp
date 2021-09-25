@@ -18,9 +18,9 @@ namespace Aula {
             #endif
         }
         
-        string getEnvironmentVariable(const string &env) {
+        std::string getEnvironmentVariable(const std::string &env) {
             #ifdef _WINDOWS
-                wstring name = Encoding::utf8ToWideString(env), buf;
+                std::wstring name = Encoding::utf8ToWideString(env), buf;
                 u32 size = GetEnvironmentVariable(name.c_str(), nullptr, 0);
                 
                 if(size == 0) return "";
@@ -34,13 +34,13 @@ namespace Aula {
         }
         
         #ifdef _WINDOWS
-            string getCurrentDirectory() {
+            std::string getCurrentDirectory() {
                 wchar_t dest[512];
                 GetCurrentDirectory(512, dest);
                 return Encoding::toUTF8(dest);
             }
         #else
-            string getCurrentDirectory() {
+            std::string getCurrentDirectory() {
                 char dest[512];
                 return getcwd(dest, 512);
             }

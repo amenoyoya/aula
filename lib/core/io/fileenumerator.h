@@ -8,27 +8,27 @@ namespace Aula {
         class FileEnumerator: public Object {
         public:
             FileEnumerator(): Object(), handle(0) {}
-            explicit FileEnumerator(const string &dir): Object(), handle(0) {
+            explicit FileEnumerator(const std::string &dir): Object(), handle(0) {
                 open(dir);
             }
             ~FileEnumerator(){
                 close();
             }
             
-            bool open(const string &dir);
+            bool open(const std::string &dir);
             void close();
             
             /// 次のファイルへ列挙を進める(falseが返ったら列挙終了)
-            // getState(this) == Object::FINISHED でも列挙終了検知可能
+            // this->getState() == Object::FINISHED でも列挙終了検知可能
             bool toNext();
             
             // ディレクトリ内ファイル名取得
-            const string &getName() const { return name; }
+            const std::string &getName() const { return name; }
             // "ディレクトリ名/ファイル名"取得
-            string getPath() const { return dir + name; }
+            std::string getPath() const { return dir + name; }
         private:
-            u32     handle;
-            string  dir, name;
+            u32          handle;
+            std::string  dir, name;
         };
     }
 }

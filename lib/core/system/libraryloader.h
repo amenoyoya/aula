@@ -9,7 +9,7 @@ namespace Aula {
             u32 handle;
         public:
             LibraryLoader(): Object(), handle(0) {}
-            explicit LibraryLoader(const string &path): Object(), handle(0) {
+            explicit LibraryLoader(const std::string &path): Object(), handle(0) {
                 open(path);
             }
             ~LibraryLoader() {
@@ -17,13 +17,13 @@ namespace Aula {
             }
             
             /// dllファイルオープン
-            bool open(const string &path);
+            bool open(const std::string &path);
             
             /// dllファイルクローズ
             void close();
             
             /// 指定関数名の関数をロード
-            void *getFunction(const string &name) {
+            void *getFunction(const std::string &name) {
                 #ifdef _WINDOWS
                     return handle? (void*)GetProcAddress((HMODULE)handle, name.c_str()): nullptr;
                 #else

@@ -8,18 +8,18 @@
 
 namespace Aula{
     namespace IO {
-        bool copyFile(const string &src, const string &dest, bool overwrite) {
+        bool copyFile(const std::string &src, const std::string &dest, bool overwrite) {
             if (!overwrite && Path::isFile(dest)) return false;
             
             File in(src, "rb"), out(dest, "wb");
-            if (Object::getState(&in) == Object::FAILED || Object::getState(&out) == Object::FAILED) return false;
+            if (in.getState() == Object::FAILED || out.getState() == Object::FAILED) return false;
             
             auto binary = in.read(in.getSize());
-            out.write((const char *)binary->getPointer(), binary->getSize());
+            out.write(*binary, binary->getSize());
             return true;
         }
         
-        bool moveFile(const string &src, const string &dest, bool overwrite) {
+        bool moveFile(const std::string &src, const std::string &dest, bool overwrite) {
             bool isFile = Path::isFile(src), isDir = Path::isDirectory(src);
             
             if (overwrite) {
@@ -44,14 +44,14 @@ namespace Aula{
         
         
         #ifdef _WINDOWS
-            bool createDirectory(const string &dir) {
-                wstring wdir = Encoding::utf8ToWideString(dir);
+            bool createDirectory(const std::string &dir) {
+                std::wstring wdir = Encoding::utf8ToWideString(dir);
                 wchar_t *p = (wchar_t*)wdir.c_str();
                 u32 i = 0;
                 
                 while (*p != '\0') { // 上位階層のディレクトリから順に作っていく
                     if ((*p == '/' || *p == '\\') && i > 0) {
-                        wstring name = wdir.substr(0, i);
+                        std::wstring name = wdir.substr(0, i);
                         if (!PathIsDirectory(name.c_str())
                             && !CreateDirectory(name.c_str(), nullptr)) return false;
                     }
@@ -62,13 +62,13 @@ namespace Aula{
                 return true;
             }
         #else
-            bool createDirectory(const string &dir) {
+            bool createDirectory(const std::string &dir) {
                 char *p = (char*)dir.c_str();
                 u32 i = 0;
                 
                 while (p) { // 上位階層のディレクトリから順に作っていく
                     if ((*p == '/') && i > 0) {
-                        string name = dir.substr(0, i);
+                        std::string name = dir.substr(0, i);
                         if (!Path::isDirectory(name) && 0 != mkdir(name.c_str(),
                             S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)) return false;
                     }
@@ -81,15 +81,15 @@ namespace Aula{
             }
         #endif
         
-        bool copyDirectory(const string &src, const string &dest) {
+        bool copyDirectory(const std::string &src, const std::string &dest) {
             FileEnumerator f(src);
-            string dir = Path::appendSlash(dest);
+            std::string dir = Path::appendSlash(dest);
             
-            if (Object::getState(&f) == Object::FAILED) return false;
+            if (f.getState() == Object::FAILED) return false;
             if (!Path::isDirectory(dest) && !createDirectory(dest)) return false;
             do {
                 if (f.getName() != "." && f.getName() != "..") {
-                    string path = f.getPath();
+                    std::string path = f.getPath();
                     
                     if (Path::isDirectory(path)) { // ディレクトリ再帰
                         if(!copyDirectory(path, dir + f.getName())) return false;
@@ -102,7 +102,7 @@ namespace Aula{
         }
         
         /// 空ディレクトリ削除
-        inline bool rmDir(const string &dir) {
+        inline bool rmDir(const std::string &dir) {
             #ifdef _WINDOWS
                 return FALSE != RemoveDirectory(Encoding::utf8ToWideString(dir).c_str());
             #else
@@ -110,13 +110,13 @@ namespace Aula{
             #endif
         }
         
-        bool removeDirectory(const string &dir) {
+        bool removeDirectory(const std::string &dir) {
             FileEnumerator f(dir);
             
-            if (Object::getState(&f) == Object::FAILED) return false;
+            if (f.getState() == Object::FAILED) return false;
             do {
                 if (f.getName() != "." && f.getName() != "..") {
-                    string path = f.getPath();
+                    std::string path = f.getPath();
                     
                     if (Path::isDirectory(path)) { // ディレクトリは再帰で空にする
                         if (!removeDirectory(path)) return false;

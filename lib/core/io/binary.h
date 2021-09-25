@@ -51,8 +51,8 @@ namespace Aula {
             i8& operator [](u32 i){ return ptr[i]; }
             
             /// 指定位置からのポインタ取得
-            void *getPointer(u32 head = 0) {
-                return (void*)(ptr + head);
+            const void *getPointer(u32 head = 0) const {
+                return (const void *)(ptr + head);
             }
             
             /// バイナリサイズ取得
@@ -67,7 +67,7 @@ namespace Aula {
             void push(const void *data, u32 size); // only Mode.ALLOCATE
             
             /// 数値をバイナリとして追加
-            void pushValue(i32 data, u8 size=4) { // only Mode.ALLOCATE
+            void pushValue(i32 data, u8 size = 4) { // only Mode.ALLOCATE
                 push(&data, size);
             }
 
@@ -77,13 +77,15 @@ namespace Aula {
                 pushStringData(String::toString(data, precision));
             }
             
-            // 文字列をバイナリとして追加
-            void pushString(const string &data, u32 size = u32(-1)) {
+            /// 文字列をバイナリとして追加
+            void pushString(const std::string &data, u32 size = u32(-1)) {
                 push(data.c_str(), size == u32(-1)? data.size(): size);
             }
-            // 文字列を文字数と一緒に追加
-            void pushStringData(const string &data) {
-                pushValue(data.size()); pushString(data);
+
+            /// 文字列を文字数と一緒に追加
+            void pushStringData(const std::string &data) {
+                pushValue(data.size());
+                pushString(data);
             }
             
             /// バイナリの現在位置から数値を取り出す
@@ -118,20 +120,21 @@ namespace Aula {
             }
             
             /// ポインタを文字列として取得
-            string getPointerString(u32 head = 0) {
+            std::string toString(u32 head = 0) {
                 return (const char*)getPointer(head);
             }
 
             /// バイナリの現在位置からsize分の文字列を取り出す
-            string getString(u32 size);
+            std::string getString(u32 size);
             
             /// バイナリの現在位置からpushStrDataで入れた文字列を取り出す
-            string getStringData() {
+            std::string getStringData() {
                 u32 size = getU32();
                 return getString(size);
             }
             
             /// バイナリの現在位置からsize文のバッファを取り出す
+            // ポインタ位置は size 分進む
             const void *get(u32 size);
             
             /// 読み込み位置を変更する
@@ -139,23 +142,23 @@ namespace Aula {
             
             /// バイナリをキー文字列で簡易暗号化・復号化
             // only BINARY_ALLOCATE
-            void encode(const string &key, u32 keysize=16);
-            bool decode(const string &key, u32 keysize=16); // 暗号化時のキーと異なるキーが指定されると失敗
+            void encode(const std::string &key, u32 keysize=16);
+            bool decode(const std::string &key, u32 keysize=16); // 暗号化時のキーと異なるキーが指定されると失敗
 
+            /// 現在の状態を分岐取得
+            virtual u8 getState() {
+                if (_state == Mode::ALLOCATE && pos >= bin.size()) return FINISHED;
+                return _state;
+            }
+            
             /// @static バイナリデータから4バイトのハッシュ(CRC32)を生成
             // 文字列indexの検索を行う場合、文字列比較するよりCRC32ハッシュの比較を行うほうが速い
             // ただし偶然一致する可能性(16の8乗分の1)もある
             static u32 getCRC32(const void *buffer, u32 bufferlen, u32 crc32_start=0xffffff);
         private:
-            char    *ptr;
-            string   bin;
-            u32      pos;
-        protected:
-            /// 現在の状態を分岐取得
-            virtual u8 _getState() {
-                if (_state == Mode::ALLOCATE && pos >= bin.size()) return FINISHED;
-                return _state;
-            }
+            char         *ptr;
+            std::string   bin;
+            u32           pos;
         };
     }
 }
