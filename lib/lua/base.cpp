@@ -1,4 +1,5 @@
-﻿#include "base.h"
+﻿#include "base.hpp"
+
 #include "glue/core/base.hpp"
 #include "glue/core/string.hpp"
 #include "glue/core/encoding.hpp"
@@ -20,17 +21,22 @@ namespace Aula {
             // lua standard libraries
             lua.open_libraries(
                 sol::lib::base,
+                sol::lib::coroutine,
+                sol::lib::package,
                 sol::lib::string,
                 sol::lib::table,
                 sol::lib::io,
-                // sol::lib::file,
                 sol::lib::math,
-                // sol::lib::os,
-                sol::lib::debug
+                sol::lib::os,
+                sol::lib::debug,
+                sol::lib::ffi,
+                sol::lib::bit32,
+                sol::lib::jit
             );
 
             luaopen_utf8(lua); // UTF-8 support
-            // lua_setglobal(L, "utf8");
+            lua_setglobal(lua, "utf8");
+
             luaopen_lpeg(lua); // Parsing Expression Grammar for Lua
 
             open_base_library(lua);
@@ -43,6 +49,52 @@ namespace Aula {
 
         void registerZipLibrary(sol::state &lua) {
             open_zip_library(lua);
+        }
+
+        /* Lua 標準ライブラリ拡張 */
+        static u8 table_lib_code[] = {
+            #include "stdlib/table.cpp"
+        }, string_lib_code[] = {
+            #include "stdlib/string.cpp"
+        }, lpeg_lib_code[] = {
+            #include "stdlib/lpeg.cpp"
+        }, main_lib_code[] = {
+            #include "stdlib/main.cpp"
+        };
+
+        bool expandStandardLibrary(sol::state &lua, std::string *errorMessage) {
+            auto script = lua.load_buffer((const char*)table_lib_code, sizeof(table_lib_code), "<stdlib/table>");
+            auto result = script();
+            if (!result.valid()) {
+                sol::error err = result;
+                *errorMessage = err.what();
+                return false;
+            }
+            
+            script = lua.load_buffer((const char*)string_lib_code, sizeof(string_lib_code), "<stdlib/string>");
+            result = script();
+            if (!result.valid()) {
+                sol::error err = result;
+                *errorMessage = err.what();
+                return false;
+            }
+            
+            script = lua.load_buffer((const char*)lpeg_lib_code, sizeof(lpeg_lib_code), "<stdlib/lpeg>");
+            result = script();
+            if (!result.valid()) {
+                sol::error err = result;
+                *errorMessage = err.what();
+                return false;
+            }
+
+            script = lua.load_buffer((const char*)main_lib_code, sizeof(main_lib_code), "<stdlib/main>");
+            result = script();
+            if (!result.valid()) {
+                sol::error err = result;
+                *errorMessage = err.what();
+                return false;
+            }
+            return true;
         }
     }
 }
