@@ -1,4 +1,4 @@
-#include "../lib/lua/base.h"
+#include "../lib/lua/base.hpp"
 
 #pragma comment(lib, "libaula_core.lib")
 #pragma comment(lib, "libaula_zip.lib")
@@ -8,12 +8,19 @@
 
 __main() {
     sol::state lua;
+    std::string errorMessage;
 
     // register core libraries
     Aula::Lua::registerCoreLibrary(lua);
 
     // register zip libraries
     Aula::Lua::registerZipLibrary(lua);
+
+    // expand standard libraries
+    if (!Aula::Lua::expandStandardLibrary(lua, &errorMessage)) {
+        Aula::IO::Stderr->write(errorMessage);
+        return 1;
+    }
 
     // execute lua script
     Aula::System::setCurrentDirectory(

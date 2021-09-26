@@ -7,6 +7,7 @@
 namespace Aula {
     namespace IO {
         /// class File (Pipe対応)
+        // ※ Windows環境では _setmode(_fileno(fp), _O_U16TEXT) で UTF16 出力を強制する
         class File: public Object {
         public:
             File(): fp(nullptr) {}
@@ -30,11 +31,7 @@ namespace Aula {
 
             /// ファイルポインタを直接セット
             // 自動クローズは行わない
-            void set(const void *pFile) {
-                close();
-                fp = (FILE *)pFile;
-                _state = fp? Object::ACTIVE: Object::NONE;
-            }
+            void set(const void *pFile);
             
             /// ファイルサイズ取得
             u32 getSize();

@@ -24,9 +24,6 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 # Build LuaJIT
 > .\extlib\build_luajit.bat
 
-# Build tolua++
-> .\extlib\build_tolua.bat
-
 # Build zlib
 > .\extlib\build_zlib.bat
 ```
@@ -34,6 +31,13 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 ### Build Aula libraries
 ```powershell
 > .\lib\build_library.bat
+> .\lib\build_lua_library.bat
+```
+
+### Test
+```powershell
+> .\create_exe.bat .\test\aula_core.cpp
+> .\test\aula_core.exe
 ```
 
 ### Build Aula main engine
@@ -48,5 +52,4 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 ## TODO
 
 - 64bit support
-- try [sol2](https://github.com/ThePhD/sol2) library
 - try [moonjit](https://github.com/moonjit/moonjit) instead of luajit

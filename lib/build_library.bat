@@ -30,10 +30,3 @@ cd %~dp0
 lib.exe /OUT:"libaula_zip.lib" /NOLOGO *.obj
 del *.obj
 move libaula_zip.lib ..\dist\lib\x86\
-
-:: build aula lua engine library
-cd %~dp0
-%compile% lua/*.cpp
-lib.exe /OUT:"libaula_lua.lib" /NOLOGO *.obj
-del *.obj
-move libaula_lua.lib ..\dist\lib\x86\

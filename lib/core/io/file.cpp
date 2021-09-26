@@ -1,5 +1,10 @@
 ﻿#include "filesystem.hpp"
 
+#ifdef _MSC_VER
+    #include <io.h> // _setmode
+    #include <fcntl.h> // _O_U16TEXT
+#endif
+
 namespace Aula {
     namespace IO {
         #ifdef _WINDOWS
@@ -25,9 +30,9 @@ namespace Aula {
                     return false;
                 }
                 closeMode = 2;
-            }else{
-                if(mode[0] == 'w') createDirectory(Path::getParentDirectory(path)); // 親ディレクトリを自動生成
-                if(nullptr == (fp = FOPEN(fopen, path, mode))){
+            } else {
+                if (mode[0] == 'w') createDirectory(Path::getParentDirectory(path)); // 親ディレクトリを自動生成
+                if (nullptr == (fp = FOPEN(fopen, path, mode))){
                     _state = FAILED;
                     _message = "failed to open file '"+path+"'";
                     return false;
@@ -35,6 +40,11 @@ namespace Aula {
                 closeMode = 1;
             }
             _state = ACTIVE;
+            
+            #ifdef _MSC_VER
+                _setmode(_fileno(fp), _O_U16TEXT);
+            #endif
+            
             return true;
         }
         
@@ -56,6 +66,16 @@ namespace Aula {
                 fp = nullptr;
             }
             closeMode = 0;
+        }
+
+        void File::set(const void *pFile) {
+            close();
+            fp = (FILE *)pFile;
+            _state = fp? Object::ACTIVE: Object::NONE;
+
+            #ifdef _MSC_VER
+                _setmode(_fileno(fp), _O_U16TEXT);
+            #endif
         }
         
         std::string File::readLine(){
