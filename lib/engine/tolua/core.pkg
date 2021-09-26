@@ -1,3 +1,0 @@
-$pfile "core/core.pkg"
-$pfile "core/filesystem.pkg"
-$pfile "core/zip.pkg"

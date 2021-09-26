@@ -1,14 +1,19 @@
 #include "../lib/lua/base.h"
 
 #pragma comment(lib, "libaula_core.lib")
+#pragma comment(lib, "libaula_zip.lib")
 #pragma comment(lib, "libaula_lua.lib")
 #pragma comment(lib, "lua51.lib")
+#pragma comment(lib, "zlib.lib")
 
 __main() {
     sol::state lua;
 
     // register core libraries
     Aula::Lua::registerCoreLibrary(lua);
+
+    // register zip libraries
+    Aula::Lua::registerZipLibrary(lua);
 
     // execute lua script
     Aula::System::setCurrentDirectory(

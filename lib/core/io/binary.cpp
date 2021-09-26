@@ -1,4 +1,4 @@
-﻿#include "binary.h"
+﻿#include "binary.hpp"
 
 namespace Aula {
     namespace IO {
@@ -154,7 +154,7 @@ namespace Aula {
         
         void Binary::encode(const std::string &key, u32 KEYSIZE) {
             if (_state == Mode::ALLOCATE) {
-                u32 crc = getCRC32(bin.c_str(), bin.size()); // バイナリのCRC32ハッシュを計算
+                u32 crc = getCRC32(Binary((void *)bin.c_str()), bin.size()); // バイナリのCRC32ハッシュを計算
                 u32 size = bin.size(), p = 0, keysize = key.size();
                 // 暗号化
                 for (u32 i = 0; i < size; ++i) {
@@ -187,7 +187,7 @@ namespace Aula {
                 }
                 // CRCチェック
                 seek(size);
-                if (getCRC32(bin.c_str(), size) == getU32()) {
+                if (getCRC32(Binary((void *)bin.c_str()), size) == getU32()) {
                     resize(bin.size()-4); // CRCを削除して復号化完了
                     return true;
                 }
@@ -197,9 +197,9 @@ namespace Aula {
             return false;
         }
 
-        u32 Binary::getCRC32(const void *buffer, u32 bufferlen, u32 crc32_start) {
+        u32 Binary::getCRC32(const Binary &buffer, u32 bufferlen, u32 crc32_start) {
             u32 result = crc32_start;
-            u8 *p = (u8*)buffer;
+            u8 *p = (u8*)buffer.getPointer();
             
             for (; bufferlen-- > 0; ++p) {
                 result = (result >> 8) ^ g_crc32table[(*p) ^ (result & 0xFF)];
