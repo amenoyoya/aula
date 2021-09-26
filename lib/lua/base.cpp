@@ -1,10 +1,11 @@
 ﻿#include "base.h"
-#include "glue/base.h"
-#include "glue/string.h"
-#include "glue/encoding.h"
-#include "glue/path.h"
-#include "glue/io.h"
-#include "glue/system.h"
+#include "glue/core/base.hpp"
+#include "glue/core/string.hpp"
+#include "glue/core/encoding.hpp"
+#include "glue/core/path.hpp"
+#include "glue/core/io.hpp"
+#include "glue/core/system.hpp"
+#include "glue/zip.hpp"
 
 #include "luautf8/lutf8lib.c"
 #include "lpeg-1.0.0/lpcap.c"
@@ -32,12 +33,16 @@ namespace Aula {
             // lua_setglobal(L, "utf8");
             luaopen_lpeg(lua); // Parsing Expression Grammar for Lua
 
-            registerBaseLibrary(lua);
-            registerStringLibrary(lua);
-            registerEncodingLibrary(lua);
-            registerPathLibrary(lua);
-            registerIoLibrary(lua);
-            registerSystemLibrary(lua);
+            open_base_library(lua);
+            open_string_library(lua);
+            open_encoding_library(lua);
+            open_path_library(lua);
+            open_io_library(lua);
+            open_system_library(lua);
+        }
+
+        void registerZipLibrary(sol::state &lua) {
+            open_zip_library(lua);
         }
     }
 }

@@ -24,11 +24,12 @@ lib.exe /OUT:"libaula_core.lib" /NOLOGO string\*.obj encoding\*.obj system\*.obj
 del string\*.obj encoding\*.obj system\*.obj path\*.obj io\*.obj
 move libaula_core.lib ..\..\dist\lib\x86\
 
-:: build zlib library
-:: %compile% zlib/*.cpp
-:: lib.exe /OUT:"libaula_zlib.lib" /NOLOGO *.obj
-:: del *.obj
-:: move libaula_zlib.lib ..\dist\lib\x86\
+:: build zip library
+cd %~dp0
+%compile% zip/*.cpp
+lib.exe /OUT:"libaula_zip.lib" /NOLOGO *.obj
+del *.obj
+move libaula_zip.lib ..\dist\lib\x86\
 
 :: build aula lua engine library
 cd %~dp0
