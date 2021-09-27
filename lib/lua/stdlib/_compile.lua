@@ -20,7 +20,13 @@ local function compile(infile, outfile, chunkname)
     fh:close()
 end
 
-compile("table.lua", "table.cpp", "<stdlib/table>")
 compile("string.lua", "string.cpp", "<stdlib/string>")
+compile("table.lua", "table.cpp", "<stdlib/table>")
 compile("lpeg.lua", "lpeg.cpp", "<stdlib/lpeg>")
-compile("main.lua", "main.cpp", "<stdlib/main>")
+
+-- ライブラリのロード順
+--[[
+    1. string
+    2. table
+    3. lpeg
+]]

@@ -103,6 +103,27 @@ namespace Aula {
             return size;
         }
 
+        std::string File::readString(u32 size) {
+            if (!fp) return "";
+            
+            #ifdef _WINDOWS
+                std::wstring buffer;
+                
+                buffer.resize(size);
+                fgetws((wchar_t *)buffer.c_str(), size, fp);
+            #else
+                std::string buffer;
+                
+                buffer.resize(size);
+                fgets((char *)buffer.c_str(), size, fp);
+            #endif
+
+            // UTF-8 にエンコーディングして改行削除
+            std::string result = Encoding::toUTF8(buffer);
+            result.erase(result.end() - 1);
+            return result;
+        }
+
         std::unique_ptr<Binary> File::read(u32 n, u32 size) {
             if (!fp) return nullptr;
             

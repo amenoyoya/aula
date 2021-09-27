@@ -39,6 +39,10 @@ namespace Aula {
             /// 一行取得
             std::string readLine();
 
+            /// 指定文字数分の文字列を取得
+            // 基本的に標準入力用
+            std::string readString(u32 size);
+
             /// 1byte 取得
             i8 readChar() {
                 return fp? (i8)fgetc(fp): 0;

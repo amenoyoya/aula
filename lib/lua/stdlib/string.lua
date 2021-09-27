@@ -112,7 +112,8 @@ end
 
 
 -- UTF-8文字列出力関数
-function println(...)
+-- デフォルト print 関数を overload
+function print(...)
     local list = {...}
     local n = #list
     if n == 0 then
@@ -126,16 +127,17 @@ function println(...)
     end
 end
 
+-- フォーマット付きUTF-8文字列出力
 function printf(format, ...)
     Aula.IO.Stdout:write(format:format(...), false)
 end
 
 -- コマンドラインから文字列を読み込む(UTF-8)
-function readln(message)
+function readln(message, size)
     if type(message) == 'string' then
-        Aula.IO.Stdout:write(message)
+        Aula.IO.Stdout:write(message, false)
     end
-    return io.read():u8encode()
+    return Aula.IO.Stdin:readString(size or 1024)
 end
 
 
@@ -189,4 +191,30 @@ end
 -- 大文字・小文字を無視して文字列比較
 function string:equal(str, len)
     return Aula.String.isEqualFold(self, str, len or -1)
+end
+
+
+-- ffi関数
+ffi = require "ffi"
+
+if ffi.os == "Windows" then
+    -- UTF-8 <-> wchar_t[]
+    ffi.cdef[[
+    bool utf8ToWideString(const char *src, wchar_t *dest, unsigned long size);
+    bool wideStringToUTF8(const wchar_t *src, char *dest, unsigned long size);
+    ]]
+    
+    Aula.Encoding.utf8ToWideString = function(src)
+        local size = src:len()
+        local dest = ffi.new("wchar_t["..(size+1).."]")
+        ffi.C.utf8ToWideString(src, dest, size)
+        return dest
+    end
+    
+    Aula.Encoding.wideStringToUTF8 = function(src)
+        local size = ffi.sizeof(src)
+        local dest = ffi.new("char["..(size+1).."]")
+        ffi.C.wideStringToUTF8(src, dest, size)
+        return ffi.string(dest)
+    end
 end
