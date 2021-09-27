@@ -25,5 +25,5 @@ printf("file size: %d\n%s", file:getSize(), file:read(file:getSize()))
 
 --[[ enumerate files sample ]]
 for _, file in ipairs(enumerateFiles("..", 2)) do
-    println(file)
+    print(file)
 end

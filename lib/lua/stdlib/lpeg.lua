@@ -167,7 +167,7 @@ grammar = lpeg.P"@"*lpeg.Cp() / def(fin){ return fin, "\\msg" } -- "@" -> "\\msg
 local script = "#MessageBox:\\msg(Hello), NotMessageBox:\\msg(#), End:@(See, you)"
 
 -- 解析実行
-println(grammar:parse(script))
+print(grammar:parse(script))
 -- action --> Win32.showMessageBox"Hello", Win32.showMessageBox"See, you"
 -- console --> "HelloMessageBox:, NotMessageBox:\msg(Hello), End:"
 ]]

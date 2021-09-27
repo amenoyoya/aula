@@ -12,11 +12,11 @@ if getState(zip) == Object.FAILED or not zip:toFirstFile() then
     error("Cannot open ./sample.zip")
 end
 
-println("Completed to create: ./sample.zip")
+print("Completed to create: ./sample.zip")
 
 repeat
     local info = ZipFileInformation()
     if zip:getCurrentFileInformation(info) then
-        println(info.fileName)
+        print(info.fileName)
     end
 until not zip:toNextFile()

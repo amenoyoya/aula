@@ -102,6 +102,7 @@ namespace Aula {
             "set", &IO::File::set,
             "getSize", &IO::File::getSize,
             "readLine", &IO::File::readLine,
+            "readString", &IO::File::readString,
             "readChar", &IO::File::readChar,
             "writeChar", &IO::File::writeChar,
             "read", &IO::File::read,
