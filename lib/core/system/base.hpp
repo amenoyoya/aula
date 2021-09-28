@@ -35,7 +35,7 @@ namespace Aula {
         /// 環境変数設定
         inline bool setEnvironmentVariable(const std::string &name, const std::string &val) {
             #ifdef _WINDOWS
-                return FALSE != SetEnvironmentVariable(Encoding::utf8ToWideString(name).c_str(), Encoding::utf8ToWideString(val).c_str());
+                return FALSE != SetEnvironmentVariableW(Encoding::utf8ToWideString(name).c_str(), Encoding::utf8ToWideString(val).c_str());
             #else
                 return 0 == putenv((char*)(name + "=" + val).c_str());
             #endif
@@ -49,7 +49,7 @@ namespace Aula {
         /// 作業ディレクトリ変更
         inline bool setCurrentDirectory(const std::string &dir) {
             #ifdef _WINDOWS
-                return FALSE != SetCurrentDirectory(Encoding::utf8ToWideString(dir).c_str());
+                return FALSE != SetCurrentDirectoryW(Encoding::utf8ToWideString(dir).c_str());
             #else
                 return 0 == chdir(dir.c_str());
             #endif

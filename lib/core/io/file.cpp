@@ -127,11 +127,11 @@ namespace Aula {
         std::unique_ptr<Binary> File::read(u32 n, u32 size) {
             if (!fp) return nullptr;
             
-            Binary *bin = new Binary(size * n);
+            std::unique_ptr<Binary> bin(new Binary(size * n));
             u32 readedSize = fread((void *)bin->getPointer(), size, n, fp);
 
             bin->resize(readedSize);
-            return std::unique_ptr<Binary>(bin);
+            return std::move(bin);
         }
 
 
