@@ -13,7 +13,7 @@ namespace Aula {
         /// ファイル削除
         inline bool removeFile(const std::string &file) {
             #ifdef _WINDOWS
-                return FALSE != DeleteFile(Encoding::utf8ToWideString(file).c_str());
+                return FALSE != DeleteFileW(Encoding::utf8ToWideString(file).c_str());
             #else
                 return 0 == unlink(file.c_str());
             #endif

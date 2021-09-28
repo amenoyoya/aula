@@ -1,10 +1,4 @@
-#include "../lib/lua/base.hpp"
-
-#pragma comment(lib, "libaula_core.lib")
-#pragma comment(lib, "libaula_zip.lib")
-#pragma comment(lib, "libaula_lua.lib")
-#pragma comment(lib, "lua51.lib")
-#pragma comment(lib, "zlib.lib")
+#include "../lib/lua.hpp"
 
 __main() {
     sol::state lua;

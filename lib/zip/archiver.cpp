@@ -264,7 +264,7 @@ namespace Aula {
             dest->commentSize = info.size_comment;
             dest->comment.resize(info.size_comment);
             if (UNZ_OK == unzGetGlobalComment((unzFile)unz, (char*)dest->comment.c_str(), info.size_comment)) return nullptr;
-            return std::unique_ptr<GlobalInformation>(std::move(dest));
+            return std::move(dest);
         }
         
         bool Archiver::toFirstFile() {
@@ -295,7 +295,7 @@ namespace Aula {
                 nullptr, 0, (char*)dest->comment.c_str(), info.size_file_comment)) return nullptr;
             
             if (getContent && !readCurrentFileData(&dest->uncompressedData, dest->uncompressedSize, password)) return nullptr;
-            return std::unique_ptr<FileInformation>(std::move(dest));
+            return std::move(dest);
         }
         
         u32 Archiver::getCurrentOffset() const {

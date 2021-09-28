@@ -7,6 +7,7 @@
     #pragma comment(lib, "shell32.lib")
     #pragma comment(lib, "shlwapi.lib")
     #pragma comment(lib, "winmm.lib")
+    #pragma comment(lib, "libaula_core.lib")
 #endif
 
 #include "core/io/filesystem.hpp"

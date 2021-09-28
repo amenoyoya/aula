@@ -101,6 +101,7 @@ namespace Aula {
         };
 
         /// 標準入出力ファイルポインタ
+        // ※ 以下の標準入出力を使う場合、C言語組み込みの printf, scanf 等の標準入出力関数と混在すると落ちるため注意
         extern std::unique_ptr<File> Stdout;
         extern std::unique_ptr<File> Stderr;
         extern std::unique_ptr<File> Stdin;
