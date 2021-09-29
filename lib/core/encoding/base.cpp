@@ -10,7 +10,7 @@ namespace Aula {
         }
         
         std::string getEncodingName(const std::string &target){
-            return toUTF8(babel::profile_for_UI::get_base_encoding_name(babel::analyze_base_encoding(target)));
+            return std::move(toUTF8(babel::profile_for_UI::get_base_encoding_name(babel::analyze_base_encoding(target))));
         }
         
         /* 指定文字が何バイト文字か判定(戻り値: 1～4, 0=エラー) */
@@ -42,13 +42,13 @@ namespace Aula {
             if (*src == '\xef' && *(src + 1) == '\xbb' && *(src + 2) == '\xbf') p = 3;
             // エンコーディング
             if (fromEncoding == UNKNOWN) {
-                return babel::auto_translate<std::string>(src + p, toEncoding);
+                return std::move(babel::auto_translate<std::string>(src + p, toEncoding));
             }
-            return babel::manual_translate<std::string>(src + p, fromEncoding, toEncoding);
+            return std::move(babel::manual_translate<std::string>(src + p, fromEncoding, toEncoding));
         }
         
         std::string toUTF8(const std::wstring &target) {
-            return babel::manual_translate<std::wstring>(target, babel::base_encoding::utf16, babel::base_encoding::utf8);
+            return std::move(babel::manual_translate<std::wstring>(target, babel::base_encoding::utf16, babel::base_encoding::utf8));
         }
         
         #ifdef _WINDOWS
@@ -57,7 +57,7 @@ namespace Aula {
                 u32 p = 0;
                 // BOMの除去
                 if (*src == '\xef' && *(src + 1) == '\xbb' && *(src + 2) == '\xbf') p = 3;
-                return babel::manual_translate<std::string, std::string>(src + p, babel::base_encoding::utf8, babel::base_encoding::sjis);
+                return std::move(babel::manual_translate<std::string, std::string>(src + p, babel::base_encoding::utf8, babel::base_encoding::sjis));
             }
             
             std::wstring utf8ToWideString(const std::string &target) {
@@ -65,7 +65,7 @@ namespace Aula {
                 u32 p = 0;
                 // BOMの除去
                 if (*src == '\xef' && *(src + 1) == '\xbb' && *(src + 2) == '\xbf') p = 3;
-                return babel::manual_translate<std::string, std::wstring>(src + p, babel::base_encoding::utf8, babel::base_encoding::utf16);
+                return std::move(babel::manual_translate<std::string, std::wstring>(src + p, babel::base_encoding::utf8, babel::base_encoding::utf16));
             }
         #endif
     }

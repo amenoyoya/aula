@@ -37,7 +37,7 @@ namespace Aula {
         /// 対象文字列をUTF-8にエンコーディング
         // fromEncoding: 対象文字列のエンコーディングタイプ。ENC_UNKNOWNなら自動判別
         inline std::string toUTF8(const std::string &target, u8 fromEncoding = UNKNOWN){
-            return isUTF8(target) == -1? encode(target, UTF8, fromEncoding): target;
+            return isUTF8(target) == -1? std::move(encode(target, UTF8, fromEncoding)): std::move(target);
         }
         std::string toUTF8(const std::wstring &target);
         
