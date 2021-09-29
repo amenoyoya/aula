@@ -1,5 +1,4 @@
-﻿#include "../../lib/core.hpp"
-#include "../interception.hpp"
+﻿#include "../interception.hpp"
 #include <iostream>
 
 extern "C" {
@@ -7,20 +6,17 @@ extern "C" {
 }
 
 /*
-    @TODO Aula::Encoding::initialize() 関数を使うとやけに遅くなる
-        正確には setlocale(LC_ALL, "") を使ったときに遅くなる
-        
-        setlocale(LC_ALL, "C") を指定して std::cout 等でコンソール出力すれば早い
+    @MEMO Aula::Encoding::initialize() + Aula::IO::Stdout->write(...) は遅い
+        ただしそれは UTF-8 => wstring 変換処理の分やや遅いだけで
+        std::cout を使っても速度的にそこまで変わらなそうなので気にしなくても良さそう
+        - 比較: ./interception_test.cpp
 */
 __main() {
-    setlocale(LC_ALL, "C");
-
     /// Interception context 生成
     Aula::Interception::Context context;
 
     if (context.getState() == 0) {
-        // Aula::IO::Stderr->write(context.getMessage());
-        std::cout << context.getMessage() << std::endl;
+        Aula::IO::Stderr->write(context.getMessage());
         return 1;
     }
 
@@ -30,67 +26,42 @@ __main() {
     /// 入力デバイス列挙
     auto devices = context.enumerateDevices();
 
-    for (auto device = devices->begin(); device != devices->end(); ++device) {
-        // Aula::IO::Stdout->write(
-        //     Aula::String::toString(device->index) + ": " + device->hardwareId
-        //     + (device->isKeyboard ? " (Keyboard)" : (device->isMouse ? " (Mouse)" : ""))
-        // );
-        std::cout << device->index << ": " + device->hardwareId << (device->isKeyboard ? " (Keyboard)" : (device->isMouse ? " (Mouse)" : "")) << std::endl;
+    for (auto device = devices.begin(); device != devices.end(); ++device) {
+        Aula::IO::Stdout->write(
+            Aula::String::toString(device->index) + ": " + device->hardwareId
+            + (device->isKeyboard ? " (Keyboard)" : (device->isMouse ? " (Mouse)" : ""))
+        );
     }
 
-    // while (context.receive()) {
-    //     InterceptionKeyStroke *keyStroke;
-    //     InterceptionMouseStroke *mouseStroke;
+    /// 入力フィルタ設定
+    context.setKeyboardFilter(INTERCEPTION_FILTER_KEY_DOWN | INTERCEPTION_FILTER_KEY_UP | INTERCEPTION_KEY_E0 | INTERCEPTION_KEY_E1);
+    context.setMouseFilter(INTERCEPTION_FILTER_MOUSE_ALL - INTERCEPTION_FILTER_MOUSE_MOVE);
 
-    //     if (keyStroke = context.getCurrentKeyStroke()) {
-    //         Aula::IO::Stdout->write(
-    //             "Keyboard: " //+ //context.getHardwareId() +
-    //             "\n\tcode: " + Aula::String::toString(keyStroke->code) +
-    //             "\n\tstate: " + Aula::String::toString(keyStroke->state) +
-    //             "\n\tinformation: " + Aula::String::toString(keyStroke->information)
-    //         );
-    //         if (keyStroke->code == 1) break; // Escape で終了
-    //     } else if (mouseStroke = context.getCurrentMouseStroke()) {
-    //         Aula::IO::Stdout->write(
-    //             "Mouse: " //+ context.getHardwareId() +
-    //             "\n\tstate: " + Aula::String::toString(mouseStroke->state) +
-    //             "\n\tflags: " + Aula::String::toString(mouseStroke->flags) +
-    //             "\n\trolling: " + Aula::String::toString(mouseStroke->rolling) +
-    //             "\n\tx: " + Aula::String::toString(mouseStroke->x) +
-    //             "\n\ty: " + Aula::String::toString(mouseStroke->y) +
-    //             "\n\tinformation: " + Aula::String::toString(mouseStroke->information)
-    //         );
-    //     }
-    //     context.pass(); // デバイス入力をそのまま送信してデフォルトの動作を行わせる
-    //                     // ※ これを行わないとキーボード入力もマウス入力もできなくなってしまう
-    // }
+    while (context.recieve()) {
+        InterceptionKeyStroke *keyStroke;
+        InterceptionMouseStroke *mouseStroke;
 
-    InterceptionStroke stroke;
-    InterceptionDevice device;
-    auto ctx = context.getRaw();
-    while (interception_receive(ctx, device = interception_wait(ctx), &stroke, 1) > 0) {
-        if (interception_is_keyboard(device)) {
-            InterceptionKeyStroke& s = *(InterceptionKeyStroke*)&stroke;
-            std::cout << "Keyboard Input "
-                << "ScanCode=" << s.code
-                << " State=" << s.state << std::endl;
+        if (keyStroke = context.getCurrentKeyStroke()) {
+            Aula::IO::Stdout->write(
+                "Keyboard: " + context.getHardwareId() +
+                "\n\tcode: " + Aula::String::toString(keyStroke->code) +
+                "\n\tstate: " + Aula::String::toString(keyStroke->state) +
+                "\n\tinformation: " + Aula::String::toString(keyStroke->information)
+            );
+            if (keyStroke->code == 1) break; // Escape で終了
+        } else if (mouseStroke = context.getCurrentMouseStroke()) {
+            Aula::IO::Stdout->write(
+                "Mouse: " + context.getHardwareId() +
+                "\n\tstate: " + Aula::String::toString(mouseStroke->state) +
+                "\n\tflags: " + Aula::String::toString(mouseStroke->flags) +
+                "\n\trolling: " + Aula::String::toString(mouseStroke->rolling) +
+                "\n\tx: " + Aula::String::toString(mouseStroke->x) +
+                "\n\ty: " + Aula::String::toString(mouseStroke->y) +
+                "\n\tinformation: " + Aula::String::toString(mouseStroke->information)
+            );
         }
-        else if (interception_is_mouse(device)) {
-            InterceptionMouseStroke& s = *(InterceptionMouseStroke*)&stroke;
-            std::cout << "Mouse Input"
-                << " State=" << s.state
-                << " Rolling=" << s.rolling
-                << " Flags=" << s.flags
-                << " (x,y)=(" << s.x << "," << s.y << ")"
-                << std::endl;
-        }
-        
-        // 全てのデバイスの入力を通過させる
-        interception_send(ctx, device, &stroke, 1);
-        if (interception_is_keyboard(device)) { // Escapeで終了
-            InterceptionKeyStroke& s = *(InterceptionKeyStroke*)&stroke;
-            if (s.code == 1) break;
-        }
+        context.pass(); // デバイス入力をそのまま送信してデフォルトの動作を行わせる
+                        // ※ これを行わないとキーボード入力もマウス入力もできなくなってしまう
     }
     return 0;
 }

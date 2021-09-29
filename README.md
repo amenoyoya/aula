@@ -51,8 +51,6 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 
 ## TODO
 
-- コンソール出力の極端な遅さを改善したい
-    - @see: [./module/test/interception.cpp](./module/test/interception.cpp)
-    - `setlocale(LC_ALL, "")` を使って UTF-8 コンソール出力に対応すると極端に遅い
 - 64bit support
 - try [moonjit](https://github.com/moonjit/moonjit) instead of luajit
+- improve Aula.Encoding speed

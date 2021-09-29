@@ -10,11 +10,11 @@ namespace Aula {
         // ※ Windows環境では _setmode(_fileno(fp), _O_U16TEXT) で UTF16 出力を強制する
         class File: public Object {
         public:
-            File(): fp(nullptr) {}
-            explicit File(const std::string &path, const std::string &mode = "r"): fp(nullptr), closeMode(0) {
+            File(): Object(), fp(nullptr) {}
+            explicit File(const std::string &path, const std::string &mode = "r"): Object(), fp(nullptr), closeMode(0) {
                 open(path, mode);
             }
-            explicit File(const void *pFile): fp(nullptr), closeMode(0) {
+            explicit File(const void *pFile): Object(), fp(nullptr), closeMode(0) {
                 set(pFile);
             }
             ~File(){

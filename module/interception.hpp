@@ -1,7 +1,6 @@
 ﻿#pragma once
 
-#include <string>
-#include <memory>
+#include "../lib/core.hpp"
 #include <vector>
 #include <windows.h>
 
@@ -33,9 +32,9 @@ namespace Aula {
         };
 
         /// InterceptionContext wrapper class
-        class Context {
+        class Context: public Object {
         public:
-            Context(): context(0), device(0), _state(0) {
+            Context(): Object(), context(0), device(0) {
                 open();
             }
             ~Context() {
@@ -45,13 +44,11 @@ namespace Aula {
             bool open() {
                 close();
                 if (0 == (context = interception_create_context())) {
-                    _state = 0;
+                    _state = FAILED;
                     _message = "failed to create interception context";
                     return false;
                 };
-                interception_set_filter(context, interception_is_keyboard, INTERCEPTION_FILTER_KEY_ALL);
-                interception_set_filter(context, interception_is_mouse, INTERCEPTION_FILTER_MOUSE_ALL);
-                _state = 1;
+                _state = ACTIVE;
                 return true;
             }
 
@@ -62,31 +59,42 @@ namespace Aula {
                     device = 0;
                     memset(stroke, 0, sizeof(stroke));
                 }
-                _state = 0;
+                _state = NONE;
                 _message.clear();
             }
 
             /// Enumerate all deveices
-            std::unique_ptr<std::vector<Device>> enumerateDevices() {
-                std::unique_ptr<std::vector<Device>> devices(new std::vector<Device>());
+            std::vector<Device> enumerateDevices() {
+                std::vector<Device> devices;
 
                 for (unsigned long i = 0; i < INTERCEPTION_MAX_KEYBOARD; ++i) {
                     unsigned long index = INTERCEPTION_KEYBOARD(i);
                     std::string hardwareId = getHardwareId(index);
 
-                    if (hardwareId != "") devices->push_back({ index, hardwareId, true, false });
+                    if (hardwareId != "") devices.push_back({ index, hardwareId, true, false });
                 }
                 for (unsigned long i = 0; i < INTERCEPTION_MAX_MOUSE; ++i) {
                     unsigned long index = INTERCEPTION_MOUSE(i);
                     std::string hardwareId = getHardwareId(index);
 
-                    if (hardwareId != "") devices->push_back({ index, hardwareId, false, true });
+                    if (hardwareId != "") devices.push_back({ index, hardwareId, false, true });
                 }
                 return std::move(devices);
             }
 
+            /// Set keyboard input filter
+            void setKeyboardFilter(u32 filter) {
+                if (context) interception_set_filter(context, interception_is_keyboard, (InterceptionFilter)filter);
+            }
+
+            /// Set mouse input filter
+            void setMouseFilter(u32 filter) {
+                if (context) interception_set_filter(context, interception_is_mouse, (InterceptionFilter)filter);
+            }
+
             /// Get device and stroke of current input
-            bool receive() {
+            // Use for while-loop
+            bool recieve() {
                 return context? interception_receive(context, device = interception_wait(context), &stroke, 1) > 0: false;
             }
 
@@ -116,29 +124,20 @@ namespace Aula {
 
             /// Get input device hardware_id
             // @param unsigned long deviceIndex: if unsigned(-1) is designated, get the current device hardware_id
-            std::string getHardwareId(unsigned long deviceIndex = unsigned long(-1)) const {
+            std::string getHardwareId(unsigned long deviceIndex = (unsigned long)(-1)) const {
                 wchar_t hardwareId[512];
                 if (interception_get_hardware_id(
                     context,
                     deviceIndex == (unsigned long)(-1) ? device : (InterceptionDevice)deviceIndex,
                     (void *)hardwareId,
                     sizeof(hardwareId)
-                ) > 0) return "";
-                
-                char buf[1024];
-                wcstombs(buf, hardwareId, sizeof(buf));
-                return buf;
+                ) == 0) return "";
+                return std::move(Encoding::toUTF8(hardwareId));
             }
-
-            const InterceptionContext &getRaw() const { return context; }
-            const unsigned char &getState() const { return _state; }
-            const std::string &getMessage() const { return _message; }
-        public:
+        private:
             InterceptionContext context;
             InterceptionDevice  device;
             InterceptionStroke  stroke;
-            unsigned char _state;
-            std::string _message;
         };
     }
 }
