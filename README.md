@@ -30,8 +30,8 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 
 ### Build Aula libraries
 ```powershell
-> .\lib\build_library.bat
-> .\lib\build_lua_library.bat
+> .\src\aula\build_library.bat
+> .\src\aula\build_lua_library.bat
 ```
 
 ### Test
@@ -54,3 +54,4 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 - 64bit support
 - try [moonjit](https://github.com/moonjit/moonjit) instead of luajit
 - improve Aula.Encoding speed
+    - => improved a little bit by using `std::move`

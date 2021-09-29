@@ -1,4 +1,4 @@
-#include "../lib/lua.hpp"
+#include <aula/lua.hpp>
 
 __main() {
     sol::state lua;
