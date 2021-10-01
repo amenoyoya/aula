@@ -1,0 +1,2 @@
+﻿This file is not a lua script.
+Also, this file is not a lua byte code.

@@ -1,10 +1,28 @@
 ﻿#pragma once
 
-#include <aula/core/encoding/base.hpp>
+#include <aula/core/path/base.hpp>
 
 namespace Aula {
     /// システム関連
     namespace System {
+        /// コマンドライン引数を UTF-8 に変換して取得
+        // @param argv: wchar_t* or char*[] コマンドライン引数
+        // @pram argc: コマンドライン引数の数
+        template<typename Char>
+        inline std::vector<std::string> getUTF8CommandLineArguments(Char *argv[], u32 argc) {
+            std::vector<std::string> arguments;
+
+            for (u32 i = 0; i < argc; ++i) {
+                if (i == 0) {
+                    // Current execution file: => Get full path
+                    arguments.push_back(Path::complete(Encoding::toUTF8(argv[i])));
+                    continue;
+                }
+                arguments.push_back(Encoding::toUTF8(argv[i]));
+            }
+            return std::move(arguments);
+        }
+
         /// コマンド実行
         inline i32 execute(const std::string &cmd) {
             #ifdef _WINDOWS

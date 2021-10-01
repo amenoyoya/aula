@@ -60,30 +60,27 @@ namespace Aula {
             #include "stdlib/lpeg.cpp"
         };
 
-        bool expandStandardLibrary(sol::state &lua, std::string *errorMessage) {
-            auto script = lua.load_buffer((const char*)string_lib_code, sizeof(string_lib_code), "<stdlib/string>");
-            auto result = script();
-            if (!result.valid()) {
-                sol::error err = result;
-                *errorMessage = err.what();
+        static bool doLuaBuffer(sol::state &lua, const char *buffer, u32 bufferSize, const std::string &scriptName, std::string *errorMessage) {
+            auto script = lua.load_buffer(buffer, bufferSize, scriptName.c_str());
+            if (!script.valid()) {
+                sol::error err = script;
+                *errorMessage = Encoding::toUTF8(err.what());
                 return false;
             }
 
-            script = lua.load_buffer((const char*)table_lib_code, sizeof(table_lib_code), "<stdlib/table>");
-            result = script();
+            auto result = script();
             if (!result.valid()) {
                 sol::error err = result;
-                *errorMessage = err.what();
+                *errorMessage = Encoding::toUTF8(err.what());
                 return false;
             }
-            
-            script = lua.load_buffer((const char*)lpeg_lib_code, sizeof(lpeg_lib_code), "<stdlib/lpeg>");
-            result = script();
-            if (!result.valid()) {
-                sol::error err = result;
-                *errorMessage = err.what();
-                return false;
-            }
+            return true;
+        }
+
+        bool expandStandardLibrary(sol::state &lua, std::string *errorMessage) {
+            if (!doLuaBuffer((const char*)string_lib_code, sizeof(string_lib_code), "<stdlib/string>", errorMessage)) return false;
+            if (!doLuaBuffer((const char*)table_lib_code, sizeof(table_lib_code), "<stdlib/table>", errorMessage)) return false;
+            if (!doLuaBuffer((const char*)lpeg_lib_code, sizeof(lpeg_lib_code), "<stdlib/lpeg>", errorMessage)) return false;
             return true;
         }
     }
