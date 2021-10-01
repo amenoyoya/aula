@@ -35,5 +35,6 @@ core/io/filesystem
                       |_ core/encoding/base
 
 core/system/base
-  |_ core/encoding/base
+  |_ core/path/base
+       |_ core/encoding/base
 ```

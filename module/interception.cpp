@@ -1,4 +1,4 @@
-﻿#include "../lib/lua.hpp"
+﻿#include <aula/lua.hpp>
 #include "interception.hpp"
 
 extern "C" {
@@ -10,6 +10,8 @@ extern "C" {
         auto aula = lua["Aula"].get_or_create<sol::table>();
         auto interception = aula["Interception"].get_or_create<sol::table>();
 
+        #include "interception_types.hpp"
+
         interception.new_enum("ProcessPriority",
             "IDLE", Aula::Interception::ProcessPriority::IDLE,
             "BELOW_NORMAL", Aula::Interception::ProcessPriority::BELOW_NORMAL,
@@ -20,68 +22,6 @@ extern "C" {
         );
         
         interception.set_function("setCurrentProcessPriority", Aula::Interception::setCurrentProcessPriority);
-
-        interception["KEY_DOWN"] = INTERCEPTION_KEY_DOWN;
-        interception["KEY_UP"] = INTERCEPTION_KEY_UP;
-        interception["KEY_E0"] = INTERCEPTION_KEY_E0;
-        interception["KEY_E1"] = INTERCEPTION_KEY_E1;
-        interception["KEY_TERMSRV_SET_LED"] = INTERCEPTION_KEY_TERMSRV_SET_LED;
-        interception["KEY_TERMSRV_SHADOW"] = INTERCEPTION_KEY_TERMSRV_SHADOW;
-        interception["KEY_TERMSRV_VKPACKET"] = INTERCEPTION_KEY_TERMSRV_VKPACKET;
-        interception["FILTER_KEY_NONE"] = INTERCEPTION_FILTER_KEY_NONE;
-        interception["FILTER_KEY_ALL"] = INTERCEPTION_FILTER_KEY_ALL;
-        interception["FILTER_KEY_DOWN"] = INTERCEPTION_FILTER_KEY_DOWN;
-        interception["FILTER_KEY_UP"] = INTERCEPTION_FILTER_KEY_UP;
-        interception["FILTER_KEY_E0"] = INTERCEPTION_FILTER_KEY_E0;
-        interception["FILTER_KEY_E1"] = INTERCEPTION_FILTER_KEY_E1;
-        interception["FILTER_KEY_TERMSRV_SET_LED"] = INTERCEPTION_FILTER_KEY_TERMSRV_SET_LED;
-        interception["FILTER_KEY_TERMSRV_SHADOW"] = INTERCEPTION_FILTER_KEY_TERMSRV_SHADOW;
-        interception["FILTER_KEY_TERMSRV_VKPACKET"] = INTERCEPTION_FILTER_KEY_TERMSRV_VKPACKET;
-        interception["MOUSE_LEFT_BUTTON_DOWN"] = INTERCEPTION_MOUSE_LEFT_BUTTON_DOWN;
-        interception["MOUSE_LEFT_BUTTON_UP"] = INTERCEPTION_MOUSE_LEFT_BUTTON_UP;
-        interception["MOUSE_RIGHT_BUTTON_DOWN"] = INTERCEPTION_MOUSE_RIGHT_BUTTON_DOWN;
-        interception["MOUSE_RIGHT_BUTTON_UP"] = INTERCEPTION_MOUSE_RIGHT_BUTTON_UP;
-        interception["MOUSE_MIDDLE_BUTTON_DOWN"] = INTERCEPTION_MOUSE_MIDDLE_BUTTON_DOWN;
-        interception["MOUSE_MIDDLE_BUTTON_UP"] = INTERCEPTION_MOUSE_MIDDLE_BUTTON_UP;
-        interception["MOUSE_BUTTON_1_DOWN"] = INTERCEPTION_MOUSE_BUTTON_1_DOWN;
-        interception["MOUSE_BUTTON_1_UP"] = INTERCEPTION_MOUSE_BUTTON_1_UP;
-        interception["MOUSE_BUTTON_2_DOWN"] = INTERCEPTION_MOUSE_BUTTON_2_DOWN;
-        interception["MOUSE_BUTTON_2_UP"] = INTERCEPTION_MOUSE_BUTTON_2_UP;
-        interception["MOUSE_BUTTON_3_DOWN"] = INTERCEPTION_MOUSE_BUTTON_3_DOWN;
-        interception["MOUSE_BUTTON_3_UP"] = INTERCEPTION_MOUSE_BUTTON_3_UP;
-        interception["MOUSE_BUTTON_4_DOWN"] = INTERCEPTION_MOUSE_BUTTON_4_DOWN;
-        interception["MOUSE_BUTTON_4_UP"] = INTERCEPTION_MOUSE_BUTTON_4_UP;
-        interception["MOUSE_BUTTON_5_DOWN"] = INTERCEPTION_MOUSE_BUTTON_5_DOWN;
-        interception["MOUSE_BUTTON_5_UP"] = INTERCEPTION_MOUSE_BUTTON_5_UP;
-        interception["MOUSE_WHEEL"] = INTERCEPTION_MOUSE_WHEEL;
-        interception["MOUSE_HWHEEL"] = INTERCEPTION_MOUSE_HWHEEL;
-        interception["FILTER_MOUSE_NONE"] = INTERCEPTION_FILTER_MOUSE_NONE;
-        interception["FILTER_MOUSE_ALL"] = INTERCEPTION_FILTER_MOUSE_ALL;
-        interception["FILTER_MOUSE_LEFT_BUTTON_DOWN"] = INTERCEPTION_FILTER_MOUSE_LEFT_BUTTON_DOWN;
-        interception["FILTER_MOUSE_LEFT_BUTTON_UP"] = INTERCEPTION_FILTER_MOUSE_LEFT_BUTTON_UP;
-        interception["FILTER_MOUSE_RIGHT_BUTTON_DOWN"] = INTERCEPTION_FILTER_MOUSE_RIGHT_BUTTON_DOWN;
-        interception["FILTER_MOUSE_RIGHT_BUTTON_UP"] = INTERCEPTION_FILTER_MOUSE_RIGHT_BUTTON_UP;
-        interception["FILTER_MOUSE_MIDDLE_BUTTON_DOWN"] = INTERCEPTION_FILTER_MOUSE_MIDDLE_BUTTON_DOWN;
-        interception["FILTER_MOUSE_MIDDLE_BUTTON_UP"] = INTERCEPTION_FILTER_MOUSE_MIDDLE_BUTTON_UP;
-        interception["FILTER_MOUSE_BUTTON_1_DOWN"] = INTERCEPTION_FILTER_MOUSE_BUTTON_1_DOWN;
-        interception["FILTER_MOUSE_BUTTON_1_UP"] = INTERCEPTION_FILTER_MOUSE_BUTTON_1_UP;
-        interception["FILTER_MOUSE_BUTTON_2_DOWN"] = INTERCEPTION_FILTER_MOUSE_BUTTON_2_DOWN;
-        interception["FILTER_MOUSE_BUTTON_2_UP"] = INTERCEPTION_FILTER_MOUSE_BUTTON_2_UP;
-        interception["FILTER_MOUSE_BUTTON_3_DOWN"] = INTERCEPTION_FILTER_MOUSE_BUTTON_3_DOWN;
-        interception["FILTER_MOUSE_BUTTON_3_UP"] = INTERCEPTION_FILTER_MOUSE_BUTTON_3_UP;
-        interception["FILTER_MOUSE_BUTTON_4_DOWN"] = INTERCEPTION_FILTER_MOUSE_BUTTON_4_DOWN;
-        interception["FILTER_MOUSE_BUTTON_4_UP"] = INTERCEPTION_FILTER_MOUSE_BUTTON_4_UP;
-        interception["FILTER_MOUSE_BUTTON_5_DOWN"] = INTERCEPTION_FILTER_MOUSE_BUTTON_5_DOWN;
-        interception["FILTER_MOUSE_BUTTON_5_UP"] = INTERCEPTION_FILTER_MOUSE_BUTTON_5_UP;
-        interception["FILTER_MOUSE_WHEEL"] = INTERCEPTION_FILTER_MOUSE_WHEEL;
-        interception["FILTER_MOUSE_HWHEEL"] = INTERCEPTION_FILTER_MOUSE_HWHEEL;
-        interception["FILTER_MOUSE_MOVE"] = INTERCEPTION_FILTER_MOUSE_MOVE;
-        interception["MOUSE_MOVE_RELATIVE"] = INTERCEPTION_MOUSE_MOVE_RELATIVE;
-        interception["MOUSE_MOVE_ABSOLUTE"] = INTERCEPTION_MOUSE_MOVE_ABSOLUTE;
-        interception["MOUSE_VIRTUAL_DESKTOP"] = INTERCEPTION_MOUSE_VIRTUAL_DESKTOP;
-        interception["MOUSE_ATTRIBUTES_CHANGED"] = INTERCEPTION_MOUSE_ATTRIBUTES_CHANGED;
-        interception["MOUSE_MOVE_NOCOALESCE"] = INTERCEPTION_MOUSE_MOVE_NOCOALESCE;
-        interception["MOUSE_TERMSRV_SRC_SHADOW"] = INTERCEPTION_MOUSE_TERMSRV_SRC_SHADOW;
 
         interception.new_usertype<InterceptionMouseStroke>("MouseStroke",
             "state", &InterceptionMouseStroke::state,
@@ -117,6 +57,8 @@ extern "C" {
             "setMouseFilter", &Aula::Interception::Context::setMouseFilter,
             "recieve", &Aula::Interception::Context::recieve,
             "pass", &Aula::Interception::Context::pass,
+            "sendKeyStroke", &Aula::Interception::Context::sendKeyStroke,
+            "sendMouseStroke", &Aula::Interception::Context::sendMouseStroke,
             "getCurrentKeyStroke", &Aula::Interception::Context::getCurrentKeyStroke,
             "getCurrentMouseStroke", &Aula::Interception::Context::getCurrentMouseStroke,
             "getCurrentDeviceIndex", &Aula::Interception::Context::getCurrentDeviceIndex,
@@ -125,6 +67,35 @@ extern "C" {
                 [](Aula::Interception::Context *self) { return self->getHardwareId(); }
             )
         );
+
+        interception.new_usertype<Aula::Interception::Point>("Point",
+            "x", &Aula::Interception::Point::x,
+            "y", &Aula::Interception::Point::y
+        );
+        interception.new_usertype<Aula::Interception::Size>("Size",
+            "width", &Aula::Interception::Size::width,
+            "height", &Aula::Interception::Size::height
+        );
+
+        interception.set_function("getCursorPos", Aula::Interception::getCursorPos);
+        interception.set_function("getScreenSize", Aula::Interception::getScreenSize);
+        interception.set_function("warpCursor", Aula::Interception::warpCursor);
+
+        interception.new_enum("MouseAction",
+            "LEFTDOWN", Aula::Interception::MouseAction::LEFTDOWN,
+            "LEFTUP", Aula::Interception::MouseAction::LEFTUP,
+            "RIGHTDOWN", Aula::Interception::MouseAction::RIGHTDOWN,
+            "RIGHTUP", Aula::Interception::MouseAction::RIGHTUP,
+            "MIDDLEDOWN", Aula::Interception::MouseAction::MIDDLEDOWN,
+            "MIDDLEUP", Aula::Interception::MouseAction::MIDDLEUP,
+            "XDOWN", Aula::Interception::MouseAction::XDOWN,
+            "XUP", Aula::Interception::MouseAction::XUP
+        );
+
+        interception.set_function("sendMouseAction", Aula::Interception::sendMouseAction);
+        interception.set_function("sendMouseWheel", Aula::Interception::sendMouseWheel);
+        interception.set_function("sendKeyAction", Aula::Interception::sendKeyAction);
+        interception.set_function("sendKeyString", Aula::Interception::sendKeyString);
 
         return 0;
     }

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "../lib/core.hpp"
+#include <aula/core.hpp>
 #include <vector>
 #include <windows.h>
 
@@ -20,13 +20,13 @@ namespace Aula {
         };
 
         /// Set current process priority
-        bool setCurrentProcessPriority(ProcessPriority priority) {
+        inline bool setCurrentProcessPriority(ProcessPriority priority) {
             return FALSE != SetPriorityClass(GetCurrentProcess(), priority);
         }
 
         /// InterceptionDevice wrapper struct
         struct Device {
-            unsigned long index;
+            u32 index;
             std::string hardwareId;
             bool isKeyboard, isMouse;
         };
@@ -67,14 +67,14 @@ namespace Aula {
             std::vector<Device> enumerateDevices() {
                 std::vector<Device> devices;
 
-                for (unsigned long i = 0; i < INTERCEPTION_MAX_KEYBOARD; ++i) {
-                    unsigned long index = INTERCEPTION_KEYBOARD(i);
+                for (u32 i = 0; i < INTERCEPTION_MAX_KEYBOARD; ++i) {
+                    u32 index = INTERCEPTION_KEYBOARD(i);
                     std::string hardwareId = getHardwareId(index);
 
                     if (hardwareId != "") devices.push_back({ index, hardwareId, true, false });
                 }
-                for (unsigned long i = 0; i < INTERCEPTION_MAX_MOUSE; ++i) {
-                    unsigned long index = INTERCEPTION_MOUSE(i);
+                for (u32 i = 0; i < INTERCEPTION_MAX_MOUSE; ++i) {
+                    u32 index = INTERCEPTION_MOUSE(i);
                     std::string hardwareId = getHardwareId(index);
 
                     if (hardwareId != "") devices.push_back({ index, hardwareId, false, true });
@@ -99,8 +99,18 @@ namespace Aula {
             }
 
             /// Send current input as default input
-            void pass() {
-                if (context && device) interception_send(context, device, &stroke, 1);
+            bool pass() {
+                return (context && device) ? 0 < interception_send(context, device, &stroke, 1) : false;
+            }
+
+            /// Send input to keyboard device
+            bool sendKeyStroke(u32 deviceIndex, InterceptionKeyStroke *stroke) {
+                return context ? 0 < interception_send(context, deviceIndex, (InterceptionStroke *)stroke, sizeof(*stroke)) : false;
+            }
+
+            /// Send input to mouse device
+            bool sendMouseStroke(u32 deviceIndex, InterceptionMouseStroke *stroke) {
+                return context ? 0 < interception_send(context, deviceIndex, (InterceptionStroke *)stroke, sizeof(*stroke)) : false;
             }
 
             /// Get current input as key stroke
@@ -118,17 +128,17 @@ namespace Aula {
             }
 
             /// Get current device index
-            unsigned long getCurrentDeviceIndex() const {
-                return context ? (unsigned long)device : 0;
+            u32 getCurrentDeviceIndex() const {
+                return context ? (u32)device : 0;
             }
 
             /// Get input device hardware_id
-            // @param unsigned long deviceIndex: if unsigned(-1) is designated, get the current device hardware_id
-            std::string getHardwareId(unsigned long deviceIndex = (unsigned long)(-1)) const {
+            // @param u32 deviceIndex: if unsigned(-1) is designated, get the current device hardware_id
+            std::string getHardwareId(u32 deviceIndex = (u32)(-1)) const {
                 wchar_t hardwareId[512];
                 if (interception_get_hardware_id(
                     context,
-                    deviceIndex == (unsigned long)(-1) ? device : (InterceptionDevice)deviceIndex,
+                    deviceIndex == (u32)(-1) ? device : (InterceptionDevice)deviceIndex,
                     (void *)hardwareId,
                     sizeof(hardwareId)
                 ) == 0) return "";
@@ -139,5 +149,119 @@ namespace Aula {
             InterceptionDevice  device;
             InterceptionStroke  stroke;
         };
+
+
+        /*** マウス・キー入力エミュレーション ***/
+
+        struct Point {
+            i32 x, y;
+        };
+
+        struct Size {
+            i32 width, height;
+        };
+
+        /// カーソル位置取得
+        inline std::unique_ptr<Point> getCursorPos() {
+            std::unique_ptr<Point> pos(new Point{0, 0});
+            return FALSE == GetCursorPos((POINT*)pos.get()) ? nullptr : std::move(pos);
+        }
+        
+        /// スクリーンサイズ取得
+        inline std::unique_ptr<Size> getScreenSize() {
+            return std::move(std::unique_ptr<Size>(new Size{
+                GetSystemMetrics(SM_CXSCREEN),
+                GetSystemMetrics(SM_CYSCREEN)
+            }));
+        }
+
+        /// カーソル位置を移動
+        inline bool warpCursor(i32 x, i32 y) {
+            INPUT input = {
+                INPUT_MOUSE,
+                x * 65535 / (GetSystemMetrics(SM_CXSCREEN) - 1),
+                y * 65535 / (GetSystemMetrics(SM_CYSCREEN) - 1),
+                0,
+                MOUSEEVENTF_ABSOLUTE|MOUSEEVENTF_MOVE,
+                0,
+                0
+            };
+            return FALSE != SendInput(1, &input, sizeof(INPUT));
+        }
+        
+        /// マウスボタン入力
+        enum MouseAction {
+            LEFTDOWN   = 0x0002,
+            LEFTUP     = 0x0004,
+            RIGHTDOWN  = 0x0008,
+            RIGHTUP    = 0x0010,
+            MIDDLEDOWN = 0x0020,
+            MIDDLEUP   = 0x0040,
+            XDOWN      = 0x0080,
+            XUP        = 0x0100,
+        };
+        inline bool sendMouseAction(MouseAction action) {
+            INPUT input = {INPUT_MOUSE, 0, 0, 0, (DWORD)action, 0, 0};
+            return FALSE != SendInput(1, &input, sizeof(INPUT));
+        }
+        
+        /// ホイール回転
+        // @param rot: 回転量は120の倍数。通常は 120 か -120 でOK
+        inline bool sendMouseWheel(i32 rot) {
+            INPUT input = {INPUT_MOUSE, 0, 0, (DWORD)rot, MOUSEEVENTF_WHEEL, 0, 0};
+            return FALSE != SendInput(1, &input, sizeof(INPUT));
+        }
+        
+        /// キー入力
+        enum KeyAction {
+            UP = -1, // 離す
+            DOWNUP = 0, // 押して離す
+            DOWN = 1, // 押しっぱなし
+        };
+
+        // @param vkey: VK_***
+        // @param mode: -1=離す, 0=押して離す, 1=押しっぱなし
+        inline bool sendKeyAction(u8 vkey, KeyAction mode = DOWNUP) {
+            if (mode == 0) {
+                INPUT input[2];
+                input[0].type = input[1].type = INPUT_KEYBOARD;
+                input[0].ki.wVk = input[1].ki.wVk = vkey;
+                input[0].ki.wScan = input[1].ki.wScan = MapVirtualKey(vkey, 0);
+                input[0].ki.dwFlags = KEYEVENTF_EXTENDEDKEY;
+                input[1].ki.dwFlags = KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP;
+                input[0].ki.time = input[1].ki.time = 0;
+                input[0].ki.dwExtraInfo = input[1].ki.dwExtraInfo = GetMessageExtraInfo();
+                return FALSE != SendInput(2, input, sizeof(INPUT));
+            }
+
+            INPUT input;
+            input.type = INPUT_KEYBOARD;
+            input.ki.wVk = vkey;
+            input.ki.wScan = MapVirtualKey(input.ki.wVk, 0);
+            input.ki.dwFlags = KEYEVENTF_EXTENDEDKEY | (mode < 0? KEYEVENTF_KEYUP: 0);
+            input.ki.time = 0;
+            input.ki.dwExtraInfo = GetMessageExtraInfo();
+            return FALSE != SendInput(1, &input, sizeof(INPUT));
+        }
+        
+        /// 全角(UTF-8)・半角文字列入力
+        // ファンクションキーやコントロールキーを使わないならこっちのほうが便利
+        inline bool sendKeyString(const std::string &keys) {
+            std::wstring str = Encoding::utf8ToWideString(keys);
+            
+            for (wchar_t *p = (wchar_t*)str.c_str(); *p; ++p) {
+                INPUT input[2];
+                
+                input[0].type = input[1].type = INPUT_KEYBOARD;
+                input[0].ki.wVk = input[1].ki.wVk = 0;
+                input[0].ki.wScan = input[1].ki.wScan = *p;
+                input[0].ki.time = input[1].ki.time = 0;
+                input[0].ki.dwExtraInfo = input[1].ki.dwExtraInfo = GetMessageExtraInfo();
+                input[0].ki.dwFlags = KEYEVENTF_UNICODE;
+                input[1].ki.dwFlags = KEYEVENTF_UNICODE | KEYEVENTF_KEYUP;
+                if (FALSE == SendInput(2, input, sizeof(INPUT))) return false;
+            }
+            return true;
+        }
     }
 }
