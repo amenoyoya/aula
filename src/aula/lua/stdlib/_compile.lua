@@ -6,7 +6,7 @@ local function compile(infile, outfile, chunkname)
         error(msg)
     end
 
-    local func = assert(loadstring(fh:read"*a", chunkname))
+    local func = assert(load(fh:read"*a", chunkname))
     local dump, data = string.dump(func), ""
     for i = 1, dump:len() do
         data = data..dump:byte(i, i)..","
@@ -23,10 +23,12 @@ end
 compile("string.lua", "string.cpp", "<stdlib/string>")
 compile("table.lua", "table.cpp", "<stdlib/table>")
 compile("lpeg.lua", "lpeg.cpp", "<stdlib/lpeg>")
+compile("package.lua", "package.cpp", "<stdlib/package>")
 
 -- ライブラリのロード順
 --[[
     1. string
     2. table
     3. lpeg
+    4. package
 ]]

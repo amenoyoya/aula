@@ -1,6 +1,4 @@
-﻿print("❤❤❤ test for table library ❤❤❤")
-
---- テーブルシリアライズ
+﻿--- テーブルシリアライズ
 local tbl = {
     test = [==[
 Hello,

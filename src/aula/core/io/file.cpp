@@ -1,6 +1,6 @@
 ﻿#include <aula/core/io/filesystem.hpp>
 
-#ifdef _MSC_VER
+#ifdef _WINDOWS
     #include <io.h> // _setmode
     #include <fcntl.h> // _O_U16TEXT
 #endif
@@ -41,7 +41,7 @@ namespace Aula {
             }
             _state = ACTIVE;
             
-            #ifdef _MSC_VER
+            #ifdef _WINDOWS
                 _setmode(_fileno(fp), _O_U16TEXT);
             #endif
             
@@ -73,7 +73,7 @@ namespace Aula {
             fp = (FILE *)pFile;
             _state = fp? Object::ACTIVE: Object::NONE;
 
-            #ifdef _MSC_VER
+            #ifdef _WINDOWS
                 _setmode(_fileno(fp), _O_U16TEXT);
             #endif
         }

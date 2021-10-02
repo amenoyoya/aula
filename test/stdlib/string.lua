@@ -1,4 +1,4 @@
-﻿print("❤❤❤ test for string library ❤❤❤")
+﻿include "base" -- load test/stdlib/base.lua
 
 local byte = ("あ"):u8byte(1)
 assert(byte == 12354)
@@ -8,9 +8,9 @@ local char = string.u8char(12355)
 assert(char == "ぃ")
 printf("✅ OK: utf8.char(12355) = %s\n", char)
 
-local text = "🍰 hello, 世界 🌍"
+local text = "❓ hello, 世界 ❗"
 assert(text:u8len() == 13)
-assert(text:len() == 23)
+assert(text:len() == 21)
 printf("✅ OK: string.u8len, string.len\n\ttext: %s\n\tlength: %d\n\tbytes: %d\n", text, text:u8len(), text:len())
 
 local index1, index2, found = text:u8find("([a-zA-Z]+)")
@@ -30,29 +30,22 @@ for matched in text:u8gmatch("[a-zA-Z]") do
 end
 printf("✅ OK: string.u8gmatch\n\ttext: %s\n\tregex: %s\n\tmatched: %s\n", text, "[a-zA-Z]", table.serialize(alphabets))
 
-local changed = text:u8gsub("[a-zA-Z]+", "👉")
-assert(changed == "🍰 👉, 世界 🌍")
+local changed = text:u8gsub("[a-zA-Z]+", "❇️")
+assert(changed == "❓ ❇️, 世界 ❗")
 printf("✅ OK: string.u8gsub: %s\n", changed)
 
 local upper = text:u8upper()
-assert(upper == "🍰 HELLO, 世界 🌍")
+assert(upper == "❓ HELLO, 世界 ❗")
 printf("✅ OK: string.u8upper\n\ttext: %s\n", upper)
 
 local lower = upper:u8lower()
-assert(lower == "🍰 hello, 世界 🌍")
+assert(lower == "❓ hello, 世界 ❗")
 printf("✅ OK: string.u8lower\n\ttext: %s\n", lower)
 
 local rev = text:u8reverse()
-assert(rev == "🌍 界世 ,olleh 🍰")
+assert(rev == "❗ 界世 ,olleh ❓")
 printf("✅ OK: string.u8reverse\n\ttext: %s\n", rev)
 
-local text2 = "🍰 hELlO, 世界 🌍"
-assert(text:equal(text2))
+local text2 = "❓ hELlO, 世界 ❗"
+assert(text:same(text2, false))
 printf("✅ OK: string.equal\n\ttext: %s\n\ttext2: %s\n", text, text2)
-
-local command = readln "✅ readln: 続行するには y を入力 > "
-if command == "y" then
-    print "続行します\n"
-else
-    error("y 以外が入力されたため終了(" .. command .. ")")
-end

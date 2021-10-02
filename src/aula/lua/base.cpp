@@ -1,7 +1,6 @@
 ﻿#include <aula/lua/base.hpp>
 
 #include "glue/core/base.hpp"
-#include "glue/core/string.hpp"
 #include "glue/core/encoding.hpp"
 #include "glue/core/path.hpp"
 #include "glue/core/io.hpp"
@@ -25,7 +24,7 @@ namespace Aula {
                 sol::lib::package,
                 sol::lib::string,
                 sol::lib::table,
-                // sol::lib::io,
+                sol::lib::io,
                 sol::lib::math,
                 sol::lib::os,
                 sol::lib::debug,
@@ -40,7 +39,6 @@ namespace Aula {
             luaopen_lpeg(lua); // Parsing Expression Grammar for Lua
 
             open_base_library(lua);
-            open_string_library(lua);
             open_encoding_library(lua);
             open_path_library(lua);
             open_io_library(lua);
@@ -58,6 +56,8 @@ namespace Aula {
             #include "stdlib/table.cpp"
         }, lpeg_lib_code[] = {
             #include "stdlib/lpeg.cpp"
+        }, package_lib_code[] = {
+            #include "stdlib/package.cpp"
         };
 
         static bool doLuaBuffer(sol::state &lua, const char *buffer, u32 bufferSize, const std::string &scriptName, std::string *errorMessage) {
@@ -78,9 +78,10 @@ namespace Aula {
         }
 
         bool expandStandardLibrary(sol::state &lua, std::string *errorMessage) {
-            if (!doLuaBuffer((const char*)string_lib_code, sizeof(string_lib_code), "<stdlib/string>", errorMessage)) return false;
-            if (!doLuaBuffer((const char*)table_lib_code, sizeof(table_lib_code), "<stdlib/table>", errorMessage)) return false;
-            if (!doLuaBuffer((const char*)lpeg_lib_code, sizeof(lpeg_lib_code), "<stdlib/lpeg>", errorMessage)) return false;
+            if (!doLuaBuffer(lua, (const char*)string_lib_code, sizeof(string_lib_code), "<stdlib/string>", errorMessage)) return false;
+            if (!doLuaBuffer(lua, (const char*)table_lib_code, sizeof(table_lib_code), "<stdlib/table>", errorMessage)) return false;
+            if (!doLuaBuffer(lua, (const char*)lpeg_lib_code, sizeof(lpeg_lib_code), "<stdlib/lpeg>", errorMessage)) return false;
+            if (!doLuaBuffer(lua, (const char*)package_lib_code, sizeof(package_lib_code), "<stdlib/package>", errorMessage)) return false;
             return true;
         }
     }

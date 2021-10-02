@@ -21,7 +21,7 @@ end
 local text = 'バイナリサンプル'
 local bin = Aula.IO.Binary.new()
 bin:pushString(text, text:len())
-Aula.IO.Stdout:write(bin:toString(0))
+Aula.IO.Stdout:write(bin:toString())
 
 local writtenSize = file:write(bin, bin:getSize())
 
@@ -36,4 +36,4 @@ if not file:open("sample/test_copied.txt", "r") then
     error(file:getMessage())
 end
 
-Aula.IO.Stdout:write(file:read(file:getSize(), 1):toString(0))
+Aula.IO.Stdout:write(file:read(file:getSize(), 1):toString())

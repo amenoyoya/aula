@@ -19,7 +19,10 @@ __main() {
 
     if (arguments.size() > 1) {
         std::string ext = Aula::Path::getExtension(arguments[1]);
-        if (ext == ".lua" || ext == ".sym") hasMainScript = true;
+        if (ext == ".lua" || ext == ".sym") {
+            hasMainScript = true;
+            arguments[1] = Aula::Path::complete(arguments[1]); // to full path
+        }
     }
     if (!hasMainScript) {
         std::string dirname = Aula::Path::appendSlash(Aula::Path::getParentDirectory(arguments[0]));

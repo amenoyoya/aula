@@ -34,23 +34,21 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 > .\src\aula\build_lua_library.bat
 ```
 
-### Test
-```powershell
-> .\create_exe.bat .\test\aula_core.cpp
-> .\test\aula_core.exe
-```
-
-### Build Aula main engine
+### Build Aula main engine & Test
 ```powershell
 > .\src\build.bat
 
 # => Aula engine: dist/bin/x86/aula.exe
+
+# Unit test
+> .\dist\x86\aula.exe .\test\apitest.lua
 ```
 
 ***
 
 ## TODO
 
+- fix: `debug.debug()`
 - 64bit support
 - try [moonjit](https://github.com/moonjit/moonjit) instead of luajit
 - improve Aula.Encoding speed
