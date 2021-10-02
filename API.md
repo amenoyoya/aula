@@ -36,7 +36,17 @@ core/system/base
        |_ core/encoding/base
 ```
 
+### Lua exported API
+reference: [src/aula/lua/glue](./src/aula/lua/glue)
+
 ***
 
 ## Lua API
 
+- Extented functions: [src/aula/lua/stdlib](./src/aula/lua/stdlib)
+- CommandLine arguments: `os.argv` {`std::vector<std::string>`}
+     - `os.argv[1]`: Current process file path
+          - e.g. `/path/to/dist/bin/aula`
+     - `os.argv[2]`: Current executing script file path
+          - e.g. `/path/to/main.lua`
+     - `os.argv[3...]`: CommandLine arguments
