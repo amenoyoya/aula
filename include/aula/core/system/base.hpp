@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <aula/core/path/base.hpp>
+#include <vector>
 
 namespace Aula {
     /// システム関連

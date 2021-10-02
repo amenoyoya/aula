@@ -7,7 +7,7 @@
 namespace Aula {
     namespace IO {
         /// class File (Pipe対応)
-        // ※ Windows環境では _setmode(_fileno(fp), _O_U16TEXT) で UTF16 出力を強制する
+        // ※ Windows環境では _setmode(_fileno(fp), _O_U16TEXT) で UTF-16 出力を強制する
         class File: public Object {
         public:
             File(): Object(), fp(nullptr) {}

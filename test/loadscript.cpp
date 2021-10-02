@@ -8,7 +8,7 @@ const char compiler[] = R"(
         error(msg)
     end
 
-    local func = assert(loadstring(fh:read"*a", chunkname))
+    local func = assert(load(fh:read"*a", "bufsample.sym"))
     local dump = string.dump(func)
 
     fh:close()

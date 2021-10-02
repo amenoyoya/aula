@@ -188,11 +188,6 @@ function string:u8replace(var1, var2, var3, var4)
     end
 end
 
--- 大文字・小文字を無視して文字列比較
-function string:equal(str, len)
-    return Aula.String.isEqualFold(self, str, len or -1)
-end
-
 
 -- ffi関数
 ffi = require "ffi"

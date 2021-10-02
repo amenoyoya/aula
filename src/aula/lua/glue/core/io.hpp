@@ -32,6 +32,7 @@ namespace Aula {
                 [](IO::Binary *self, u32 head) { return self->getPointer(head); },
                 [](IO::Binary *self) { return self->getPointer(); }
             ),
+            "toString", &IO::Binary::toString,
             "getSize", &IO::Binary::getSize,
             "getPosition", &IO::Binary::getPosition,
             "push", &IO::Binary::push,
@@ -55,10 +56,6 @@ namespace Aula {
             "getI8", &IO::Binary::getI8,
             "getU8", &IO::Binary::getU8,
             "getNumber", &IO::Binary::getNumber,
-            "toString", sol::overload(
-                [](IO::Binary *self, u32 head) { return self->toString(head); },
-                [](IO::Binary *self) { return self->toString(); }
-            ),
             "getString", &IO::Binary::getString,
             "getStringData", &IO::Binary::getStringData,
             "get", &IO::Binary::get,
@@ -105,7 +102,10 @@ namespace Aula {
             "readString", &IO::File::readString,
             "readChar", &IO::File::readChar,
             "writeChar", &IO::File::writeChar,
-            "read", &IO::File::read,
+            "read", sol::overload(
+                [](IO::File *self, u32 n, u32 size) { return self->read(n, size); },
+                [](IO::File *self, u32 n) { return self->read(n); }
+            ),
             "write", sol::overload(
                 [](IO::File *self, const std::string &text, bool appendLF) { return self->write(text, appendLF); },
                 [](IO::File *self, const std::string &text) { return self->write(text); },

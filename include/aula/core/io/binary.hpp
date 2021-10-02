@@ -54,6 +54,11 @@ namespace Aula {
             const void *getPointer(u32 head = 0) const {
                 return (const void *)(ptr + head);
             }
+
+            /// バイナリデータを文字列型に変換
+            const std::string &toString() const {
+                return bin;
+            }
             
             /// バイナリサイズ取得
             u32 getSize() const { // only Mode.ALLOCATE
@@ -74,7 +79,7 @@ namespace Aula {
             /// 倍精度数値をバイナリとして追加
             // precision: 精度(default: 6)
             void pushNumber(double data, u8 precision = 6) { // only Mode.ALLOCATE
-                pushStringData(String::toString(data, precision));
+                pushStringData(Encoding::toString(data, precision));
             }
             
             /// 文字列をバイナリとして追加
@@ -117,11 +122,6 @@ namespace Aula {
             }
             double getNumber() {
                 return strtod(getStringData().c_str(), nullptr);
-            }
-            
-            /// ポインタを文字列として取得
-            std::string toString(u32 head = 0) {
-                return (const char*)getPointer(head);
             }
 
             /// バイナリの現在位置からsize分の文字列を取り出す
