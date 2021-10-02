@@ -1,22 +1,22 @@
-using(Aula)
-
 --[[ create zip archive sample ]]
-if not compressDirectory(".", "./sample.zip") then
-    error("Cannot compress current directory")
-end
+assert(Zip.compress(__dir() .. "/iosample", __dir() .. "/iosample.zip"))
+print "✅ OK: Zip.compress: iosample/ => iosample.zip"
 
 --[[ read zip archive sample ]]
-local zip = ZipArchiver("./sample.zip", "r")
+local zip = Zip.Archiver.new(__dir() .. "/iosample.zip", "r")
 
-if getState(zip) == Object.FAILED or not zip:toFirstFile() then
-    error("Cannot open ./sample.zip")
-end
+assert(zip:getState() ~= Object.State.FAILED)
+assert(zip:toFirstFile())
 
-print("Completed to create: ./sample.zip")
-
+print "✅ OK: Zip.Archiver:open-getCurrentFileInformation"
 repeat
-    local info = ZipFileInformation()
-    if zip:getCurrentFileInformation(info) then
-        print(info.fileName)
-    end
+    local info = zip:getCurrentFileInformation(true)
+    printf("\t%s: %s\n", info.fileName, info.uncompressedData:toString())
 until not zip:toNextFile()
+zip:close()
+
+assert(IO.removeDirectory(__dir() .. "/iosample"))
+assert(IO.removeFile(__dir() .. "/iosample.zip"))
+assert(not Path.isDirectory(__dir() .. "/iosample"))
+assert(not Path.isFile(__dir() .. "/iosample.zip"))
+print "✅ OK: Aula.IO.removeDirectory, Aula.IO.removeFile"

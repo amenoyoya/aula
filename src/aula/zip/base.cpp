@@ -39,11 +39,15 @@ namespace Aula {
         bool compress(const std::string &dirPath, const std::string &outputFile,
             const std::string &key, u8 level, const std::string &mode, const std::string &rootDir)
         {
+            if (!Path::isDirectory(dirPath)) return false;
+
             Archiver zip(outputFile, mode);
-            
-            if (zip.getState() == Object::FAILED) return false;
-            return __compress(&zip, dirPath, key, level,
-                Path::appendSlash(dirPath).size(), rootDir == ""? "": Path::appendSlash(rootDir));
+            return zip.getState() == Object::FAILED
+                ? false
+                : __compress(
+                    &zip, dirPath, key, level,
+                    Path::appendSlash(dirPath).size(), rootDir == ""? "": Path::appendSlash(rootDir)
+                );
         }
         
         bool uncompress(const std::string &zipFile, const std::string &dirPath, const std::string &key) {
@@ -55,6 +59,7 @@ namespace Aula {
                 IO::File file;
                 auto info = zip.getCurrentFileInformation(true, key);
 
+                if (!info) return false;
                 if (!file.open(Path::appendSlash(dirPath) + info->fileName, "wb")) return false;
                 file.write(info->uncompressedData, info->uncompressedData.getSize());
             } while (zip.toNextFile());

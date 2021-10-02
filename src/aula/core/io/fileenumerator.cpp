@@ -91,5 +91,40 @@ namespace Aula {
                 return true;
             }
         #endif
+
+
+        /*** ディレクトリ内ファイル列挙 ***/
+
+        /// 基底関数
+        static void enumerateFilesBase(std::vector<FileInfo> &dest, const std::string &dir, i32 nest, EnumFileOption opt) {
+            if (nest == 0) return;
+            
+            auto fe = FileEnumerator(dir);
+            if (fe.getState() == Object::State::FAILED) return;
+
+            while (fe.toNext()) {
+                std::string name = fe.getName();
+                if (name == ".." || name == ".") continue;
+
+                FileInfo info;
+                info.path = fe.getPath();
+                info.isFile = Path::isFile(info.path);
+                info.isDirectory = Path::isDirectory(info.path);
+
+                if (info.isFile) {
+                    if (opt > 0) dest.push_back(info);
+                } else if (info.isDirectory) {
+                    if (opt % 2 == 0) dest.push_back(info);
+                    enumerateFilesBase(dest, info.path, nest - 1, opt);
+                }
+            }
+        }
+
+        std::vector<FileInfo> enumerateFiles(const std::string &dir, i32 nest, EnumFileOption opt) {
+            std::vector<FileInfo> files;
+
+            enumerateFilesBase(files, dir, nest, opt);
+            return std::move(files);
+        }
     }
 }

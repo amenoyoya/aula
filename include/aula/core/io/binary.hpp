@@ -23,6 +23,9 @@ namespace Aula {
             explicit Binary(const void *data, u32 size): Object(), ptr(nullptr), pos(0) {
                 push(data, size);
             }
+            explicit Binary(const std::string &data, u32 size): Object(), ptr(nullptr), pos(0) {
+                pushString(data, size);
+            }
             ~Binary(){
                 release();
             }

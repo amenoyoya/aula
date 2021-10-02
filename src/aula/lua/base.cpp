@@ -1,4 +1,4 @@
-﻿#include <aula/lua/base.hpp>
+﻿#include <aula/lua.hpp>
 
 #include "glue/core/base.hpp"
 #include "glue/core/encoding.hpp"
@@ -16,7 +16,8 @@
 
 namespace Aula {
     namespace Lua {
-        void registerCoreLibrary(sol::state &lua) {
+        /// Register Aula C++ Library
+        static void registerAulaLibrary(sol::state &lua) {
             // lua standard libraries
             lua.open_libraries(
                 sol::lib::base,
@@ -43,9 +44,7 @@ namespace Aula {
             open_path_library(lua);
             open_io_library(lua);
             open_system_library(lua);
-        }
 
-        void registerZipLibrary(sol::state &lua) {
             open_zip_library(lua);
         }
 
@@ -77,12 +76,26 @@ namespace Aula {
             return true;
         }
 
-        bool expandStandardLibrary(sol::state &lua, std::string *errorMessage) {
+        static bool expandStandardLibrary(sol::state &lua, std::string *errorMessage) {
             if (!doLuaBuffer(lua, (const char*)string_lib_code, sizeof(string_lib_code), "<stdlib/string>", errorMessage)) return false;
             if (!doLuaBuffer(lua, (const char*)table_lib_code, sizeof(table_lib_code), "<stdlib/table>", errorMessage)) return false;
             if (!doLuaBuffer(lua, (const char*)lpeg_lib_code, sizeof(lpeg_lib_code), "<stdlib/lpeg>", errorMessage)) return false;
             if (!doLuaBuffer(lua, (const char*)package_lib_code, sizeof(package_lib_code), "<stdlib/package>", errorMessage)) return false;
+
+            /// oberload `debug.debug()`: call Aula::Lua::dotty
+            auto debug = lua["debug"].get_or_create<sol::table>();
+            debug["debug"].set_function(sol::overload(
+                [&lua](const std::string &progname) { dotty(lua, progname); },
+                [&lua]() { dotty(lua); }
+            ));
             return true;
+        }
+
+
+        /// @public Register Aula Library
+        bool registerLibrary(sol::state &lua, std::string *errorMessage) {
+            registerAulaLibrary(lua);
+            return expandStandardLibrary(lua, errorMessage);
         }
     }
 }

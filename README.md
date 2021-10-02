@@ -48,8 +48,8 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 
 ## TODO
 
-- fix: `debug.debug()`
 - 64bit support
+- Cross platform support
 - try [moonjit](https://github.com/moonjit/moonjit) instead of luajit
 - improve Aula.Encoding speed
     - => improved a little bit by using `std::move`

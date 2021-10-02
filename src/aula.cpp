@@ -1,10 +1,16 @@
 ﻿#include <aula/lua.hpp>
 
 /// Aula Engine version
-const char version[] = "Aula Engine v.1.0.0";
+const char version[] = "Aula Engine v.1.0.0 -- Copyright (C) 2021 amenoyoya. https://github.com/amenoyoya/aula";
 
 __main() {
+    // Aula Lua Engine 準備
     sol::state lua;
+    std::string errorMessage;
+    if (!Aula::Lua::registerLibrary(lua, &errorMessage)) {
+        Aula::IO::Stderr->write(errorMessage);
+        return 1;
+    }
 
     // コマンドライン引数
     std::vector arguments = Aula::System::getUTF8CommandLineArguments(argv, argc);
@@ -35,23 +41,11 @@ __main() {
         }
     }
 
-    // メインスクリプトが指定されていない場合はバージョン表示して終了
+    // メインスクリプトが指定されていない場合はバージョン表示して interactive mode で起動
     if (!hasMainScript) {
         Aula::IO::Stdout->write(version);
+        Aula::Lua::dotty(lua);
         return 0;
-    }
-
-    // register core libraries
-    Aula::Lua::registerCoreLibrary(lua);
-
-    // register zip libraries
-    Aula::Lua::registerZipLibrary(lua);
-
-    // expand standard libraries
-    std::string errorMessage;
-    if (!Aula::Lua::expandStandardLibrary(lua, &errorMessage)) {
-        Aula::IO::Stderr->write(errorMessage);
-        return 1;
     }
 
     // os.argv[]で引数取得可能に

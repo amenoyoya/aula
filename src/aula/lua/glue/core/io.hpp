@@ -19,7 +19,8 @@ namespace Aula {
                 IO::Binary(),
                 IO::Binary(void *),
                 IO::Binary(u32),
-                IO::Binary(const void *, u32)
+                IO::Binary(const void *, u32),
+                IO::Binary(const std::string &, u32)
             >(),
             "getState", &IO::Binary::getState,
             "getMessage", &IO::Binary::getMessage,
@@ -86,8 +87,7 @@ namespace Aula {
             sol::constructors<
                 IO::File(),
                 IO::File(const std::string &, const std::string &),
-                IO::File(const std::string &),
-                IO::File(const void *)
+                IO::File(const std::string &)
             >(),
             "getState", &IO::File::getState,
             "getMessage", &IO::File::getMessage,
@@ -96,7 +96,6 @@ namespace Aula {
                 [](IO::File *self, const std::string &path) { return self->open(path); }
             ),
             "close", &IO::File::close,
-            "set", &IO::File::set,
             "getSize", &IO::File::getSize,
             "readLine", &IO::File::readLine,
             "readString", &IO::File::readString,
@@ -115,9 +114,17 @@ namespace Aula {
             ),
             "seek", &IO::File::seek,
             "getPosition", &IO::File::getPosition,
-            "flush", &IO::File::flush,
-            "getPointer", &IO::File::getPointer
+            "flush", &IO::File::flush
         );
+
+        io["readFile"].set_function(sol::overload(
+            [](const std::string &filename, u32 size) { return IO::readFile(filename, size); },
+            [](const std::string &filename) { return IO::readFile(filename); }
+        ));
+        io["writeFile"].set_function(sol::overload(
+            [](const std::string &filename, const IO::Binary &data, u32 size) { return IO::writeFile(filename, data, size); },
+            [](const std::string &filename, const IO::Binary &data) { return IO::writeFile(filename, data); }
+        ));
 
         io["Stdout"] = IO::Stdout.get();
         io["Stderr"] = IO::Stderr.get();
@@ -134,6 +141,22 @@ namespace Aula {
             "getName", &IO::FileEnumerator::getName,
             "getPath", &IO::FileEnumerator::getPath
         );
+
+        io.new_enum("EnumFileOption",
+            "DIR", IO::EnumFileOption::DIR,
+            "FILE", IO::EnumFileOption::FILE,
+            "ALL", IO::EnumFileOption::ALL
+        );
+        io.new_usertype<IO::FileInfo>("FileInfo",
+            "path", &IO::FileInfo::path,
+            "isFile", &IO::FileInfo::isFile,
+            "isDirectory", &IO::FileInfo::isDirectory
+        );
+        io["enumerateFiles"].set_function(sol::overload(
+            [](const std::string &dir, i32 nest, IO::EnumFileOption opt) { return IO::enumerateFiles(dir, nest, opt); },
+            [](const std::string &dir, i32 nest) { return IO::enumerateFiles(dir, nest); },
+            [](const std::string &dir) { return IO::enumerateFiles(dir); }
+        ));
 
         io.set_function("copyFile", sol::overload(
             [](const std::string &src, const std::string &dest, bool overwrite) { return IO::copyFile(src, dest, overwrite); },

@@ -1,24 +1,4 @@
-﻿--- Aula.IO.File easy read/write ---
-
--- @param {string} filename: Target file path
--- @param {number} size (default: file.size): Size for reading (byte)
--- @returns {Aula.IO.Binary} Read data
-function Aula.IO.readFile(filename, size)
-    local file = Aula.IO.File.new(filename, "rb")
-    return file:getState() == Aula.Object.State.FAILED and Aula.IO.Binary.new() or file:read(size or file:getSize())
-end
-
--- @param {string} filename: Target file path
--- @param {Aula.IO.Binary} data: Content data for writing
--- @param {number} size (default: data.size): Size for writing (byte)
--- @returns {number} Written size (byte)
-function Aula.IO.writeFile(filename, data, size)
-    local file = Aula.IO.File.new(filename, "wb")
-    return file:getState() == Aula.Object.State.FAILED and 0 or file:write(data, size or data:getSize())
-end
-
-
---- overload lua standard load function ---
+﻿--- overload lua standard load function ---
 
 -- @param {string} filename
 -- @param {string} mode (default: "bt"): {"b": バイナリモード, "t": テキストモード, "bt": バイナリ＋テキストモード}
