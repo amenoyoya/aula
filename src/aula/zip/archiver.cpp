@@ -304,13 +304,10 @@ namespace Aula {
         
         bool Archiver::readCurrentFileData(IO::Binary *dest, u32 size, const std::string &password) const {
             if (!unz) return false;
-            if (UNZ_OK == unzOpenCurrentFile3((unzFile)unz, nullptr, nullptr, 0, password != ""? password.c_str(): nullptr)) return false;
+            if (UNZ_OK != unzOpenCurrentFile3((unzFile)unz, nullptr, nullptr, 0, password != ""? password.c_str(): nullptr)) return false;
 
             dest->resize(size);
-            if (0 <= unzReadCurrentFile((unzFile)unz, (void *)dest->getPointer(), size)) {
-                unzCloseCurrentFile((unzFile)unz);
-                return false;
-            }
+            unzReadCurrentFile((unzFile)unz, (void *)dest->getPointer(), size);
             unzCloseCurrentFile((unzFile)unz);
             return true;
         }

@@ -71,5 +71,3 @@ local MyApp = class(App) {
 local myapp = MyApp.new(100)
 assert(myapp:getID() == 500)
 printf("✅ OK: class MyApp extend App\n\tgetID: %d\n", myapp:getID())
-
-print ""

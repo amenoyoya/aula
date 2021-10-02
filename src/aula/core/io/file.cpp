@@ -1,10 +1,5 @@
 ﻿#include <aula/core/io/filesystem.hpp>
 
-#ifdef _WINDOWS
-    #include <io.h> // _setmode
-    #include <fcntl.h> // _O_U16TEXT
-#endif
-
 namespace Aula {
     namespace IO {
         #ifdef _WINDOWS
@@ -20,31 +15,35 @@ namespace Aula {
             #define _FOPEN(open) open
         #endif
         #define FOPEN(open, path, mode) _FOPEN(open)(ENCODE(path).c_str(), ENCODE(mode).c_str())
+
+        /// open mode をバイナリモードに強制変更
+        static inline std::string toBinaryMode(const std::string &mode) {
+            for (char *p = (char *)mode.c_str(); *p; ++p) {
+                if (*p == 'b') return mode; // バイナリモードを指定されている場合はそのまま返す
+            }
+            // バイナリモードを指定されていない場合は "b" を付与
+            return mode + "b";
+        }
         
         bool File::open(const std::string &path, const std::string &mode){
             close();
             if(mode[0] == 'p'){
                 if(nullptr == (fp = FOPEN(popen, path, mode.substr(1)))){
                     _state = FAILED;
-                    _message = "failed to open pipe '"+path+"'";
+                    _message = "failed to open pipe '" + path + "'";
                     return false;
                 }
                 closeMode = 2;
             } else {
                 if (mode[0] == 'w') createDirectory(Path::getParentDirectory(path)); // 親ディレクトリを自動生成
-                if (nullptr == (fp = FOPEN(fopen, path, mode))){
+                if (nullptr == (fp = FOPEN(fopen, path, toBinaryMode(mode)))) { // 必ずバイナリモードで開く
                     _state = FAILED;
-                    _message = "failed to open file '"+path+"'";
+                    _message = "failed to open file '" + path + "'";
                     return false;
                 }
                 closeMode = 1;
             }
             _state = ACTIVE;
-            
-            #ifdef _WINDOWS
-                _setmode(_fileno(fp), _O_U16TEXT);
-            #endif
-            
             return true;
         }
         
@@ -66,16 +65,6 @@ namespace Aula {
                 fp = nullptr;
             }
             closeMode = 0;
-        }
-
-        void File::set(const void *pFile) {
-            close();
-            fp = (FILE *)pFile;
-            _state = fp? Object::ACTIVE: Object::NONE;
-
-            #ifdef _WINDOWS
-                _setmode(_fileno(fp), _O_U16TEXT);
-            #endif
         }
         
         std::string File::readLine(){
@@ -104,24 +93,26 @@ namespace Aula {
         }
 
         std::string File::readString(u32 size) {
-            if (!fp) return "";
-            
-            #ifdef _WINDOWS
-                std::wstring buffer;
-                
-                buffer.resize(size);
-                fgetws((wchar_t *)buffer.c_str(), size, fp);
-            #else
-                std::string buffer;
-                
-                buffer.resize(size);
-                fgets((char *)buffer.c_str(), size, fp);
-            #endif
-
-            // UTF-8 にエンコーディングして改行削除
-            std::string result = Encoding::toUTF8(buffer);
-            result.erase(result.end() - 1);
-            return result;
+            // 標準入出力であれば fgets
+            if (isStdFilePointer(fp)) {
+                #ifdef _WINDOWS
+                    std::wstring buffer;
+                    
+                    buffer.resize(size);
+                    fgetws((wchar_t *)buffer.c_str(), size, fp);
+                #else
+                    std::string buffer;
+                    
+                    buffer.resize(size);
+                    fgets((char *)buffer.c_str(), size, fp);
+                #endif
+                // UTF-8 にエンコーディングして改行削除
+                std::string result = Encoding::toUTF8(buffer);
+                result.erase(result.end() - 1);
+                return result;
+            }
+            // 通常ファイルであれば fread
+            return std::move(read(size)->toString());
         }
 
         std::unique_ptr<Binary> File::read(u32 n, u32 size) {
