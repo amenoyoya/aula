@@ -6,14 +6,16 @@ A Lua script engine for a standalone utility application
 
 - OS:
     - Windows 10
+    - Ubuntu 20.04
 - Build tools:
     - Microsoft Visual C++ 2019 Community Edition
+    - gcc: `9.3.0`
 - Editor:
     - VSCode
 
 ***
 
-## Development
+## Development in Windows 10
 
 Make sure `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat` has been installed by Microsoft Visual C++ 2019 Community Edition.
 
@@ -46,10 +48,39 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 
 ***
 
+## Development in Ubuntu 20.04
+
+### Setup
+```bash
+# install gcc etc
+$ sudo apt install -y build-essential
+
+# install 32bit development libraries
+# $ sudo apt install -y libc6-dev-i386
+```
+
+### Build external libraries
+```bash
+# Build LuaJIT
+$ /bin/bash ./extlib/build_luajit.sh
+
+# Build zlib
+$ /bin/bash ./extlib/build_zlib.sh
+```
+
+### Build Aula libraries
+```bash
+$ /bin/bash ./src/aula/build_library.sh
+$ /bin/bash ./src/aula/build_lua_library.sh
+```
+
+***
+
 ## TODO
 
 - 64bit support
 - Cross platform support
+    - Currently, cannot build on Ubuntu 20.04
 - try [moonjit](https://github.com/moonjit/moonjit) instead of luajit
 - improve Aula.Encoding speed
     - => improved a little bit by using `std::move`

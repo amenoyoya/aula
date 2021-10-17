@@ -57,7 +57,7 @@ namespace Aula {
                     _message = "failed to open directory '"+_dir+"'";
                     return false;
                 }
-                struct dirent* dent = readdir((DIR*)handle);
+                struct dirent* dent = readdir((::DIR*)handle);
                 if (!dent) {
                     _state = FAILED;
                     _message = "failed to read directory '"+_dir+"'";
@@ -72,7 +72,7 @@ namespace Aula {
                 _state = NONE;
                 _message.clear();
                 if (handle) {
-                    closedir((DIR*)handle);
+                    closedir((::DIR*)handle);
                     handle = 0;
                 }
                 dir.clear();
@@ -82,7 +82,7 @@ namespace Aula {
             bool FileEnumerator::toNext() {
                 if (!handle) return false;
                 
-                struct dirent* dent = readdir((DIR*)handle);
+                struct dirent* dent = readdir((::DIR*)handle);
                 if (!dent) {
                     _state = FINISHED;
                     return false;
