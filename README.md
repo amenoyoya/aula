@@ -43,7 +43,7 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 # => Aula engine: dist/bin/x86/aula.exe
 
 # Unit test
-> .\dist\x86\aula.exe .\test\apitest.lua
+> .\dist\bin\x86\aula.exe .\test\apitest.lua
 ```
 
 ***
@@ -74,13 +74,23 @@ $ /bin/bash ./src/aula/build_library.sh
 $ /bin/bash ./src/aula/build_lua_library.sh
 ```
 
+### Build Aula main engine & Test
+```bash
+$ /bin/bash ./src/build.sh
+
+# => Aula engine: dist/bin/x64/aula
+
+# Unit test
+$ ./dist/bin/x64/aula ./test/apitest.lua
+```
+
 ***
 
 ## TODO
 
 - 64bit support
 - Cross platform support
-    - Currently, cannot build on Ubuntu 20.04
+    - ❌ Currently, C++ exception is occurred at `Aula::IO::Stdin::readString` on Ubuntu 20.04
 - try [moonjit](https://github.com/moonjit/moonjit) instead of luajit
 - improve Aula.Encoding speed
     - => improved a little bit by using `std::move`

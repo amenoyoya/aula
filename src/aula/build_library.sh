@@ -4,16 +4,16 @@ export CPLUS_INCLUDE_PATH="$(pwd)/../../include:$(pwd)/../../extlib/LuaJIT-2.1.0
 
 # build core library
 cd ./core/encoding
-g++ -c -O2 *.cpp
+g++ -c -O2 -s -DNDEBUG *.cpp
 
 cd ../system
-g++ -c -O2 *.cpp
+g++ -c -O2 -s -DNDEBUG *.cpp
 
 cd ../path
-g++ -c -O2 *.cpp
+g++ -c -O2 -s -DNDEBUG *.cpp
 
 cd ../io
-g++ -c -O2 *.cpp
+g++ -c -O2 -s -DNDEBUG *.cpp
 
 cd ..
 ar rcs libaula_core.a ./encoding/*.o ./system/*.o ./path/*.o ./io/*.o
@@ -22,7 +22,7 @@ mv libaula_core.a ../../../dist/lib/x64/
 
 # build zip library
 cd ../zip
-g++ -c -O2 *.cpp
+g++ -c -O2 -s -DNDEBUG *.cpp
 ar rcs libaula_zip.a *.o
 rm *.o
 mv libaula_zip.a ../../../dist/lib/x64/

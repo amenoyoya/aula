@@ -132,7 +132,7 @@ namespace Aula {
         
         
         /*** class Archiver ***/
-        bool Archiver::open(const std::string &filename, const std::string &mode) {
+        bool Archiver::open(const std::string &filename, const std::string &mode, const std::string &password) {
             close();
             
             u8 type;
@@ -145,6 +145,8 @@ namespace Aula {
                 _message = "unknown Archiver.open mode";
                 return false;
             }
+
+            compressPassword = password; // 圧縮・解凍パスワード
             
             if (type < 3) { // 作成
                 if (0 == (zip = (u32)zipOpen2(filename.c_str(), type, nullptr, &g_fileFuncDef))) {
@@ -203,9 +205,7 @@ namespace Aula {
         }
         
         /** zip::Archiver outputモード関数 **/
-        bool Archiver::append(const IO::Binary &data, const std::string &destFileName, u32 datasize,
-            const std::string &password, u8 level, const std::string &comment)
-        {
+        bool Archiver::append(const IO::Binary &data, const std::string &destFileName, u32 datasize, const std::string &comment) {
             if (!zip) return false;
             
             zip_fileinfo info;
@@ -219,8 +219,8 @@ namespace Aula {
             // UTF-8対応 flagBase: 1<<11
             if (ZIP_OK != zipOpenNewFileInZip4((zipFile)zip,
                 exchangePath(name).c_str(), &info, nullptr, 0,
-                nullptr, 0, comment != ""? comment.c_str(): nullptr, Z_DEFLATED, level,
-                0, 15, 8, Z_DEFAULT_STRATEGY, password != ""? password.c_str(): nullptr,
+                nullptr, 0, comment != ""? comment.c_str(): nullptr, Z_DEFLATED, compressLevel,
+                0, 15, 8, Z_DEFAULT_STRATEGY, compressPassword != ""? compressPassword.c_str(): nullptr,
                 IO::Binary::getCRC32(data, datasize, 0xffffffff), 36, 1 << 11))
             {
                 _message = "failed to create local file '"+destFileName+"' in zip";
@@ -235,9 +235,7 @@ namespace Aula {
             return true;
         }
         
-        bool Archiver::appendFile(const std::string &srcFileName, const std::string &destFileName,
-            const std::string &password, u8 level, const std::string &comment)
-        {
+        bool Archiver::appendFile(const std::string &srcFileName, const std::string &destFileName, const std::string &comment) {
             if (!zip) return false;
             
             IO::File file(srcFileName, "rb");
@@ -248,7 +246,7 @@ namespace Aula {
             
             u32 size = file.getSize();
             auto bin = file.read(size);
-            return append(*bin, destFileName, size, password, level, comment);
+            return append(*bin, destFileName, size, comment);
         }
         
         /** zip::Archiver inputモード関数 **/
@@ -279,7 +277,7 @@ namespace Aula {
             return unz? UNZ_OK == unzLocateFile((unzFile)unz, exchangePath(filename).c_str(), 0): false;
         }
         
-        std::unique_ptr<FileInformation> Archiver::getCurrentFileInformation(bool getContent, const std::string &password) const {
+        std::unique_ptr<FileInformation> Archiver::getCurrentFileInformation(bool getContent) const {
             if (!unz) return nullptr;
             
             unz_file_info info;
@@ -294,7 +292,7 @@ namespace Aula {
             if (UNZ_OK != unzGetCurrentFileInfo((unzFile)unz, nullptr, (char*)dest->fileName.c_str(), info.size_filename,
                 nullptr, 0, (char*)dest->comment.c_str(), info.size_file_comment)) return nullptr;
             
-            if (getContent && !readCurrentFileData(&dest->uncompressedData, dest->uncompressedSize, password)) return nullptr;
+            if (getContent && !readCurrentFileData(&dest->uncompressedData, dest->uncompressedSize)) return nullptr;
             return std::move(dest);
         }
         
@@ -302,9 +300,9 @@ namespace Aula {
             return unz? unzGetOffset((unzFile)unz): 0;
         }
         
-        bool Archiver::readCurrentFileData(IO::Binary *dest, u32 size, const std::string &password) const {
+        bool Archiver::readCurrentFileData(IO::Binary *dest, u32 size) const {
             if (!unz) return false;
-            if (UNZ_OK != unzOpenCurrentFile3((unzFile)unz, nullptr, nullptr, 0, password != ""? password.c_str(): nullptr)) return false;
+            if (UNZ_OK != unzOpenCurrentFile3((unzFile)unz, nullptr, nullptr, 0, compressPassword != ""? compressPassword.c_str(): nullptr)) return false;
 
             dest->resize(size);
             unzReadCurrentFile((unzFile)unz, (void *)dest->getPointer(), size);

@@ -40,34 +40,42 @@ namespace Aula {
         /// zipファイル管理クラス
         class Archiver: public Object {
         public:
-            Archiver(): Object(), zip(0), unz(0), zipSize(0) {}
-            explicit Archiver(const std::string &filename, const std::string &type = "w"): Object(), zip(0), unz(0), zipSize(0) {
-                open(filename, type);
+            Archiver(): Object(), zip(0), unz(0), zipSize(0), compressLevel(6) {}
+            explicit Archiver(const std::string &filename, const std::string &type = "w", const std::string &password = "")
+                : Object(), zip(0), unz(0), zipSize(0), compressLevel(6)
+            {
+                open(filename, type, password);
             }
             ~Archiver(){
                 close();
             }
 
             /// zipファイルオープン
-            // type: 作成タイプ
+            // @param type: 作成タイプ
             //         "w": 新規作成、 "w+":（ファイルに）埋め込み、 "a":（zipに）追加
             //         "r": 作成(埋め込み)したzipアーカイブを読み込む
-            // 新規作成の場合，親ディレクトリも自動的につくる
-            bool open(const std::string &filename, const std::string &type = "w");
+            //      新規作成の場合，親ディレクトリも自動的につくる
+            bool open(const std::string &filename, const std::string &type = "w", const std::string &password = "");
 
             /// zipファイルクローズ
             // close時に作成したzipファイルにコメントを付加できる
-            bool close(const std::string &comment="");
+            bool close(const std::string &comment = "");
 
             /*** アウトプットモード用関数 ***/
+            /// 圧縮レベル現在値取得
+            const u8 &getCompressLevel() const { return compressLevel; }
+            
+            /// 圧縮レベル変更: 0-9
+            Archiver &setCompressLevel(u8 level) {
+                compressLevel = level;
+                return *this;
+            }
+
             /// zipファイルにデータをファイルとして追加
-            // level: 圧縮レベル0～9
-            bool append(const IO::Binary &data, const std::string &destFileName, u32 datasize = u32(-1),
-                const std::string &password = "", u8 level = 6, const std::string &comment = "");
+            bool append(const IO::Binary &data, const std::string &destFileName, u32 datasize = u32(-1), const std::string &comment = "");
             
             /// ファイルを追加
-            bool appendFile(const std::string &srcFileName, const std::string &destFileName,
-                const std::string &password = "", u8 level = 6, const std::string &comment = "");
+            bool appendFile(const std::string &srcFileName, const std::string &destFileName, const std::string &comment = "");
 
 
             /*** インプットモード用関数 ***/
@@ -88,8 +96,7 @@ namespace Aula {
 
             /// 書庫内の現在位置のファイル情報取得
             // @param getContent(default: false): 解凍後のファイルデータを取得する場合は true
-            // @param password(default: ""): getContent = true にした場合、解凍パスワードがあれば指定する
-            std::unique_ptr<FileInformation> getCurrentFileInformation(bool getContent = false, const std::string &password = "") const;
+            std::unique_ptr<FileInformation> getCurrentFileInformation(bool getContent = false) const;
 
             /// 書庫内の現在位置取得
             u32 getCurrentOffset() const;
@@ -98,11 +105,13 @@ namespace Aula {
             // 書庫内ファイルの読み込みが完了した場合FINISHEDを返す
             virtual u8 getState();
         private:
-            u32  zip, unz; // 圧縮・解凍ハンドル
-            u32  zipSize; // zipファイル全体のサイズ
+            u32         zip, unz; // 圧縮・解凍ハンドル
+            u32         zipSize; // zipファイル全体のサイズ
+            u8          compressLevel; // 圧縮レベル (append時使用)
+            std::string compressPassword; // 圧縮・解凍用パスワード
 
             /// 書庫内の現在位置の解凍後ファイルデータ取得
-            bool readCurrentFileData(IO::Binary *dest, u32 size, const std::string &password) const;
+            bool readCurrentFileData(IO::Binary *dest, u32 size) const;
         };
     }
 }

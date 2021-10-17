@@ -56,15 +56,15 @@ namespace Aula {
                 [](Zip::Archiver *self, const std::string &comment) { return self->close(comment); },
                 [](Zip::Archiver *self) { return self->close(); }
             ),
+            "getCompressLevel", &Zip::Archiver::getCompressLevel,
+            "setCompressLevel", &Zip::Archiver::setCompressLevel,
             "append", sol::overload(
-                [](Zip::Archiver *self, const IO::Binary &data, const std::string &destFileName, u32 datasize, std::string &password, u8 level, const std::string &comment) { return self->append(data, destFileName, datasize, password, level, comment); },
-                [](Zip::Archiver *self, const IO::Binary &data, const std::string &destFileName, u32 datasize, std::string &password, u8 level) { return self->append(data, destFileName, datasize, password, level); },
+                [](Zip::Archiver *self, const IO::Binary &data, const std::string &destFileName, u32 datasize, const std::string &comment) { return self->append(data, destFileName, datasize, comment); },
                 [](Zip::Archiver *self, const IO::Binary &data, const std::string &destFileName, u32 datasize) { return self->append(data, destFileName, datasize); },
                 [](Zip::Archiver *self, const IO::Binary &data, const std::string &destFileName) { return self->append(data, destFileName); }
             ),
             "appendFile", sol::overload(
-                [](Zip::Archiver *self, const std::string &srcFileName, const std::string &destFileName, std::string &password, u8 level, const std::string &comment) { return self->appendFile(srcFileName, destFileName, password, level, comment); },
-                [](Zip::Archiver *self, const std::string &srcFileName, const std::string &destFileName, std::string &password, u8 level) { return self->appendFile(srcFileName, destFileName, password, level); },
+                [](Zip::Archiver *self, const std::string &srcFileName, const std::string &destFileName, const std::string &comment) { return self->appendFile(srcFileName, destFileName, comment); },
                 [](Zip::Archiver *self, const std::string &srcFileName, const std::string &destFileName) { return self->appendFile(srcFileName, destFileName); }
             ),
             "getGlobalInformation", &Zip::Archiver::getGlobalInformation,
@@ -73,7 +73,6 @@ namespace Aula {
             "toNextFile", &Zip::Archiver::toNextFile,
             "locateFile", &Zip::Archiver::locateFile,
             "getCurrentFileInformation", sol::overload(
-                [](Zip::Archiver *self, bool getContent, const std::string &password) { return self->getCurrentFileInformation(getContent, password); },
                 [](Zip::Archiver *self, bool getContent) { return self->getCurrentFileInformation(getContent); },
                 [](Zip::Archiver *self) { return self->getCurrentFileInformation(); }
             ),
