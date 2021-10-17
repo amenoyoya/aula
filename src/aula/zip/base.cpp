@@ -16,9 +16,7 @@ namespace Aula {
         
         
         /// ディレクトリを圧縮する(基底)
-        static bool __compress(Archiver *zip, const std::string &dirPath,
-            const std::string &key, u8 level, u32 baseDirLen, const std::string &rootDir)
-        {
+        static bool __compress(Archiver *zip, const std::string &dirPath, u32 baseDirLen, const std::string &rootDir) {
             IO::FileEnumerator f(dirPath);
             
             if (f.getState() == Object::FAILED) return false;
@@ -28,9 +26,9 @@ namespace Aula {
                 std::string path = f.getPath();
 
                 if (Path::isDirectory(path)) { // ディレクトリは再帰
-                    if (!__compress(zip, path, key, level, baseDirLen, rootDir)) return false;
+                    if (!__compress(zip, path, baseDirLen, rootDir)) return false;
                 } else if(Path::isFile(path)) { // ファイルはzipに追加
-                    if (!zip->appendFile(path, rootDir + path.substr(baseDirLen), key, level)) return false;
+                    if (!zip->appendFile(path, rootDir + path.substr(baseDirLen))) return false;
                 }
             } while (f.toNext());
             return true;
@@ -41,23 +39,24 @@ namespace Aula {
         {
             if (!Path::isDirectory(dirPath)) return false;
 
-            Archiver zip(outputFile, mode);
+            Archiver zip(outputFile, mode, key);
             return zip.getState() == Object::FAILED
                 ? false
                 : __compress(
-                    &zip, dirPath, key, level,
+                    &zip.setCompressLevel(level),
+                    dirPath,
                     Path::appendSlash(dirPath).size(), rootDir == ""? "": Path::appendSlash(rootDir)
                 );
         }
         
         bool uncompress(const std::string &zipFile, const std::string &dirPath, const std::string &key) {
-            Archiver zip(zipFile, "r");
+            Archiver zip(zipFile, "r", key);
             
             if (zip.getState() == Object::FAILED) return false;
             if (zip.toFirstFile()) return false;
             do {
                 IO::File file;
-                auto info = zip.getCurrentFileInformation(true, key);
+                auto info = zip.getCurrentFileInformation(true);
 
                 if (!info) return false;
                 if (!file.open(Path::appendSlash(dirPath) + info->fileName, "wb")) return false;
