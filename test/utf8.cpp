@@ -1,12 +1,16 @@
 ﻿#include <aula/core.hpp>
 
 __main() {
-    // _setmode(_fileno(stdout), _O_U16TEXT) により機種依存文字が出力されるようになっているか確認
+    // (Windows only) _setmode(_fileno(stdout), _O_U16TEXT) により機種依存文字が出力されるようになっているか確認
     Aula::IO::Stdout->write(_U8("✅ Hello, 世界♥"));
 
     // Aula::IO::File::write の動作確認
     std::string dir = Aula::Path::getParentDirectory(Aula::Encoding::toUTF8(argv[0]));
     auto file = Aula::IO::File(dir + "/utf8.txt", "w");
+    if (file.getState() == Aula::Object::FAILED) {
+        Aula::IO::Stdout->write(file.getMessage());
+        return 1;
+    }
     file.write(_U8("✅ Hello, 世界❤\n⭕ UTF-8 エンコーディングされたファイル"));
     file.flush();
 

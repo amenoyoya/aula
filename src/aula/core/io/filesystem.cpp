@@ -55,7 +55,8 @@ namespace Aula{
                         if (!PathIsDirectory(name.c_str())
                             && !CreateDirectory(name.c_str(), nullptr)) return false;
                     }
-                    ++p; ++i;
+                    ++p;
+                    ++i;
                 }
                 if (!PathIsDirectory(wdir.c_str())
                     && !CreateDirectory(wdir.c_str(), nullptr)) return false;
@@ -66,7 +67,7 @@ namespace Aula{
                 char *p = (char*)dir.c_str();
                 u32 i = 0;
                 
-                while (p) { // 上位階層のディレクトリから順に作っていく
+                while (*p != '\0') { // 上位階層のディレクトリから順に作っていく
                     if ((*p == '/') && i > 0) {
                         std::string name = dir.substr(0, i);
                         if (!Path::isDirectory(name) && 0 != mkdir(name.c_str(),

@@ -156,8 +156,8 @@ namespace Aula {
             }
             
             std::string complete(const std::string &path) {
-                wchar_t dest[512];
-                GetFullPathName(Encoding::utf8ToWideString(path).c_str(), 512, dest, nullptr);
+                wchar_t dest[1024];
+                if (0 == GetFullPathName(Encoding::utf8ToWideString(path).c_str(), 1024, dest, nullptr)) return path;
                 return std::move(Encoding::toUTF8(dest));
             }
             
@@ -185,10 +185,9 @@ namespace Aula {
             }
             
             std::string complete(const std::string &path) {
-                char *buf = realpath(path.c_str(), nullptr);
-                std::string ret = buf;
-                free(buf);
-                return std::move(ret);
+                char buf[1024 * 4];
+                if (nullptr == realpath(path.c_str(), buf)) return path;
+                return buf;
             }
             
             std::string appendSlash(const std::string &path){
