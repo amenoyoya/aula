@@ -31,8 +31,7 @@ end
 function __dir()
     local filename = debug.getinfo(2, "S").source
     return Aula.Path.getParentDirectory(
-        filename:same("@", true, 1) and filename:sub(2) or filename, -- skip head `@`
-        false -- not required real path (full path)
+        filename:same("@", true, 1) and filename:sub(2) or filename -- skip head `@`
     )
 end
 
@@ -44,8 +43,7 @@ end
 function include(modname)
     local filename = debug.getinfo(2, "S").source
     local dirname = Aula.Path.getParentDirectory(
-        filename:same("@", true, 1) and filename:sub(2) or filename, -- skip head `@`
-        false -- not required real path (full path)
+        filename:same("@", true, 1) and filename:sub(2) or filename -- skip head `@`
     )
     return require(Aula.Path.appendSlash(dirname) .. modname)
 end

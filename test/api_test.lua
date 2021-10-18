@@ -1,9 +1,10 @@
-﻿print("✅ Current directory:", __dir())
+﻿assert(Aula.Path.getBaseName(__dir()) == "test")
+print("✅ Current directory:", __dir())
+
+assert(Aula.Path.getBaseName(__file()) == "api_test.lua")
 print("✅ Current file:", __file())
 
-local args = {"aula", "apitest.lua"}
 for i, argv in ipairs(os.argv) do
-    assert(Aula.Path.getBaseName(argv) == args[i])
     printf("✅ argv[%d]: %s\n", i, argv)
 end
 
