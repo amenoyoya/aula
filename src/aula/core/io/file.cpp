@@ -96,20 +96,19 @@ namespace Aula {
             // 標準入出力であれば fgets
             if (isStdFilePointer(fp)) {
                 #ifdef _WINDOWS
-                    std::wstring buffer;
-                    
-                    buffer.resize(size);
-                    fgetws((wchar_t *)buffer.c_str(), size, fp);
+                    wchar_t *buffer = new wchar_t[size];
+                    std::string result = Encoding::toUTF8(fgetws(buffer, size, fp));
+
+                    delete[] buffer;
                 #else
-                    std::string buffer;
-                    
-                    buffer.resize(size);
-                    fgets((char *)buffer.c_str(), size, fp);
+                    char *buffer = new char[size * 4];
+                    std::string result = Encoding::toUTF8(fgets(buffer, size * 4, fp));
+
+                    delete[] buffer;
                 #endif
-                // UTF-8 にエンコーディングして改行削除
-                std::string result = Encoding::toUTF8(buffer);
+                // 改行削除
                 result.erase(result.end() - 1);
-                return result;
+                return std::move(result);
             }
             // 通常ファイルであれば fread
             return std::move(read(size)->toString());

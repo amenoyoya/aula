@@ -13,7 +13,7 @@ __main() {
     }
 
     // コマンドライン引数
-    std::vector arguments = Aula::System::getUTF8CommandLineArguments(argv, argc);
+    std::vector<std::string> arguments = Aula::System::getUTF8CommandLineArguments(argv, argc);
 
     /*
         メインスクリプト
@@ -50,7 +50,7 @@ __main() {
 
     // os.argv[]で引数取得可能に
     auto os = lua["os"].get_or_create<sol::table>();
-    os["argv"] = arguments;
+    os["argv"] = sol::as_table(arguments);
     
     // execute lua script
     lua.safe_script_file(arguments[1], [](lua_State*, sol::protected_function_result pfr) {

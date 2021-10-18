@@ -153,9 +153,9 @@ namespace Aula {
             "isDirectory", &IO::FileInfo::isDirectory
         );
         io["enumerateFiles"].set_function(sol::overload(
-            [](const std::string &dir, i32 nest, IO::EnumFileOption opt) { return IO::enumerateFiles(dir, nest, opt); },
-            [](const std::string &dir, i32 nest) { return IO::enumerateFiles(dir, nest); },
-            [](const std::string &dir) { return IO::enumerateFiles(dir); }
+            [](const std::string &dir, i32 nest, IO::EnumFileOption opt) { return sol::as_table(IO::enumerateFiles(dir, nest, opt)); },
+            [](const std::string &dir, i32 nest) { return sol::as_table(IO::enumerateFiles(dir, nest)); },
+            [](const std::string &dir) { return sol::as_table(IO::enumerateFiles(dir)); }
         ));
 
         io.set_function("copyFile", sol::overload(

@@ -44,7 +44,11 @@ namespace Aula {
         }
         std::string toUTF8(const std::wstring &target);
         
-        #define _U8(str) Aula::Encoding::toUTF8(L##str)
+        #ifdef _WINDOWS
+            #define _U8(str) Aula::Encoding::toUTF8(L##str)
+        #else
+            #define _U8(str) std::string(str)
+        #endif
         
         #ifdef _WINDOWS
             // 対象文字列をUTF-8からShift-JISにエンコーディング
