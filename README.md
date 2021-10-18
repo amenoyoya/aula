@@ -2,6 +2,33 @@
 
 A Lua script engine for a standalone utility application
 
+## Usage
+
+```bash
+# display help message
+$ aula help
+
+Usage:
+    aula [command] [script_file] [arguments]
+
+The commands are:
+    help    display information about Aula script engine
+    version display Aula version
+    test    execute test codes
+            Usage:  aula test [directory (default: ./)]
+            Description:    Aula will execute test script files like "*_test.lua" in the target directory and the sub directories
+
+The script file will be executed:
+    If the command line arguments[1] is "*.lua" file (Plain lua source code file)
+    Or if the command line arguments[1] is "*.sym" file (Compiled lua byte code file)
+    Or if the "main.lua" file exists at the directory containing Aula
+    Or if the "main.sym" file exists at the directory containing Aula
+
+Aula will be executed as interactive-mode if there are no commands and script files.
+```
+
+***
+
 ## Environment
 
 - OS:
@@ -40,10 +67,18 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 ```powershell
 > .\src\build.bat
 
-# => Aula engine: dist/bin/x86/aula.exe
+# => Aula engine compiled to: ./dist/bin/x86/aula.exe
 
 # Unit test
-> .\dist\bin\x86\aula.exe .\test\apitest.lua
+> .\dist\bin\x86\aula.exe test
+
+## or Specify unit test directory: .\test\
+> .\dist\bin\x86\aula.exe test .\test
+
+## => unit test files will be tested
+###   - ./test/api_test.lua
+###   - ./test/dotty_test.lua
+###   - ./test/readln_test.lua
 ```
 
 ***
@@ -78,19 +113,24 @@ $ /bin/bash ./src/aula/build_lua_library.sh
 ```bash
 $ /bin/bash ./src/build.sh
 
-# => Aula engine: dist/bin/x64/aula
+# => Aula engine compiled to: ./dist/bin/x64/aula
 
 # Unit test
-$ ./dist/bin/x64/aula ./test/apitest.lua
+$ ./dist/bin/x64/aula test
+
+## or Specify unit test directory: ./test/
+$ ./dist/bin/x64/aula test ./test
+
+## => unit test files will be tested
+###   - ./test/api_test.lua
+###   - ./test/dotty_test.lua
+###   - ./test/readln_test.lua
 ```
 
 ***
 
 ## TODO
 
-- 64bit support
-- Cross platform support
-    - ❌ Currently, C++ exception is occurred at `Aula::IO::Stdin::readString` on Ubuntu 20.04
 - try [moonjit](https://github.com/moonjit/moonjit) instead of luajit
 - improve Aula.Encoding speed
     - => improved a little bit by using `std::move`
