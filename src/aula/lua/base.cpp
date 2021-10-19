@@ -55,8 +55,8 @@ namespace Aula {
             #include "stdlib/table.cpp"
         }, lpeg_lib_code[] = {
             #include "stdlib/lpeg.cpp"
-        }, package_lib_code[] = {
-            #include "stdlib/package.cpp"
+        }, system_lib_code[] = {
+            #include "stdlib/system.cpp"
         };
 
         static bool doLuaBuffer(sol::state &lua, const char *buffer, u32 bufferSize, const std::string &scriptName, std::string *errorMessage) {
@@ -80,7 +80,7 @@ namespace Aula {
             if (!doLuaBuffer(lua, (const char*)string_lib_code, sizeof(string_lib_code), "<stdlib/string>", errorMessage)) return false;
             if (!doLuaBuffer(lua, (const char*)table_lib_code, sizeof(table_lib_code), "<stdlib/table>", errorMessage)) return false;
             if (!doLuaBuffer(lua, (const char*)lpeg_lib_code, sizeof(lpeg_lib_code), "<stdlib/lpeg>", errorMessage)) return false;
-            if (!doLuaBuffer(lua, (const char*)package_lib_code, sizeof(package_lib_code), "<stdlib/package>", errorMessage)) return false;
+            if (!doLuaBuffer(lua, (const char*)system_lib_code, sizeof(system_lib_code), "<stdlib/system>", errorMessage)) return false;
 
             /// oberload `debug.debug()`: call Aula::Lua::dotty
             auto debug = lua["debug"].get_or_create<sol::table>();

@@ -111,36 +111,6 @@ function string:encode(toEnc, fromEnc)
 end
 
 
--- UTF-8文字列出力関数
--- デフォルト print 関数を overload
-function print(...)
-    local list = {...}
-    local n = #list
-    if n == 0 then
-        Aula.IO.Stdout:write "nil"
-    else
-        Aula.IO.Stdout:write(tostring(list[1]), false)
-        for i = 2, n do
-            Aula.IO.Stdout:write("\t"..tostring(list[i]), false)
-        end
-        Aula.IO.Stdout:write "" -- \n
-    end
-end
-
--- フォーマット付きUTF-8文字列出力
-function printf(format, ...)
-    Aula.IO.Stdout:write(format:format(...), false)
-end
-
--- コマンドラインから文字列を読み込む(UTF-8)
-function readln(message, size)
-    if type(message) == 'string' then
-        Aula.IO.Stdout:write(message, false)
-    end
-    return Aula.IO.Stdin:readString(size or 1024)
-end
-
-
 --[[ 文字列拡張ライブラリ ]]--
 -- 文字列strのini～finの部分を文字列replで置換
 local function replaceString(str, ini, fin, repl)

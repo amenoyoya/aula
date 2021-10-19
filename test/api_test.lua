@@ -4,9 +4,7 @@ print("✅ Current directory:", __dir())
 assert(Aula.Path.getBaseName(__file()) == "api_test.lua")
 print("✅ Current file:", __file())
 
-for i, argv in ipairs(os.argv) do
-    printf("✅ argv[%d]: %s\n", i, argv)
-end
+print("✅ os.argv", os.argv)
 
 print("\n⭐ Test for stdin/stdout")
 include "base" -- require {__dir}/base.lua
