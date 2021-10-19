@@ -23,12 +23,12 @@ end
 compile("string.lua", "string.cpp", "<stdlib/string>")
 compile("table.lua", "table.cpp", "<stdlib/table>")
 compile("lpeg.lua", "lpeg.cpp", "<stdlib/lpeg>")
-compile("package.lua", "package.cpp", "<stdlib/package>")
+compile("system.lua", "system.cpp", "<stdlib/system>")
 
 -- ライブラリのロード順
 --[[
     1. string
     2. table
     3. lpeg
-    4. package
+    4. system
 ]]
