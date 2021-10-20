@@ -107,7 +107,7 @@ end
 
 -- エンコーディング
 function string:encode(toEnc, fromEnc)
-    return Aula.Encoding.encode(self, toEnc, fromEnc or Aula.Encoding.Type.UNKNOWN)
+    return Aula.Encoding.encode(self, toEnc or Aula.Encoding.Type.UNKNOWN, fromEnc or Aula.Encoding.Type.UNKNOWN)
 end
 
 

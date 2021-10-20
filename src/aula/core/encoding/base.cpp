@@ -41,6 +41,9 @@ namespace Aula {
             // BOMの除去
             if (*src == '\xef' && *(src + 1) == '\xbb' && *(src + 2) == '\xbf') p = 3;
             // エンコーディング
+            if (toEncoding == UNKNOWN) {
+                return src + p; // no encoding
+            }
             if (fromEncoding == UNKNOWN) {
                 return std::move(babel::auto_translate<std::string>(src + p, toEncoding));
             }

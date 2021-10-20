@@ -20,6 +20,7 @@ local function compile(infile, outfile, chunkname)
     fh:close()
 end
 
+compile("teal.lua", "teal.cpp", "<stdlib/teal>")
 compile("string.lua", "string.cpp", "<stdlib/string>")
 compile("table.lua", "table.cpp", "<stdlib/table>")
 compile("lpeg.lua", "lpeg.cpp", "<stdlib/lpeg>")
@@ -27,8 +28,9 @@ compile("system.lua", "system.cpp", "<stdlib/system>")
 
 -- ライブラリのロード順
 --[[
-    1. string
-    2. table
-    3. lpeg
-    4. system
+    1. teal
+    2. string
+    3. table
+    4. lpeg
+    5. system
 ]]

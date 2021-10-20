@@ -49,7 +49,9 @@ namespace Aula {
         }
 
         /* Lua 標準ライブラリ拡張 */
-        static u8 string_lib_code[] = {
+        static u8 teal_lib_code[] = {
+            #include "stdlib/teal.cpp"
+        }, string_lib_code[] = {
             #include "stdlib/string.cpp"
         }, table_lib_code[] = {
             #include "stdlib/table.cpp"
@@ -77,10 +79,11 @@ namespace Aula {
         }
 
         static bool expandStandardLibrary(sol::state &lua, std::string *errorMessage) {
-            if (!doLuaBuffer(lua, (const char*)string_lib_code, sizeof(string_lib_code), "<stdlib/string>", errorMessage)) return false;
-            if (!doLuaBuffer(lua, (const char*)table_lib_code, sizeof(table_lib_code), "<stdlib/table>", errorMessage)) return false;
-            if (!doLuaBuffer(lua, (const char*)lpeg_lib_code, sizeof(lpeg_lib_code), "<stdlib/lpeg>", errorMessage)) return false;
-            if (!doLuaBuffer(lua, (const char*)system_lib_code, sizeof(system_lib_code), "<stdlib/system>", errorMessage)) return false;
+            if (!doLuaBuffer(lua, (const char*)teal_lib_code, sizeof(teal_lib_code), "@<stdlib/teal>", errorMessage)) return false;
+            if (!doLuaBuffer(lua, (const char*)string_lib_code, sizeof(string_lib_code), "@<stdlib/string>", errorMessage)) return false;
+            if (!doLuaBuffer(lua, (const char*)table_lib_code, sizeof(table_lib_code), "@<stdlib/table>", errorMessage)) return false;
+            if (!doLuaBuffer(lua, (const char*)lpeg_lib_code, sizeof(lpeg_lib_code), "@<stdlib/lpeg>", errorMessage)) return false;
+            if (!doLuaBuffer(lua, (const char*)system_lib_code, sizeof(system_lib_code), "@<stdlib/system>", errorMessage)) return false;
 
             /// oberload `debug.debug()`: call Aula::Lua::dotty
             auto debug = lua["debug"].get_or_create<sol::table>();

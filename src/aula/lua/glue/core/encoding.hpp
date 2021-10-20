@@ -25,7 +25,8 @@ namespace Aula {
         encoding.set_function("isUTF8", Encoding::isUTF8);
         encoding.set_function("encode", sol::overload(
             [](const std::string &target, u8 toEncoding, u8 fromEncoding) { return Encoding::encode(target, toEncoding, fromEncoding); },
-            [](const std::string &target, u8 toEncoding) { return Encoding::encode(target, toEncoding); }
+            [](const std::string &target, u8 toEncoding) { return Encoding::encode(target, toEncoding); },
+            [](const std::string &target) { return Encoding::encode(target); }
         ));
 
         /// Aula::Encoding::isSameString は string.same としてバインド
