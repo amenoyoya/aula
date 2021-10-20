@@ -6,13 +6,20 @@
 --     - `*.tl`:  load as a teal code
 -- @param {string} mode (default: "bt"): {"b": バイナリモード, "t": テキストモード, "bt": バイナリ＋テキストモード}
 -- @param {table} env (default: _ENV)
--- @returns ({function} func, {string} errorMessage)
+-- @returns {function, string} loader, error_message
 function loadfile(filename, mode, env)
     local code = Aula.IO.readFile(filename):toString()
     local ext = Aula.Path.getExtension(filename)
 
     -- transpile teal => lua if the file is `*.tl`
-    code = (ext == ".tl" and teal.transpile(code:encode(), filename) or code)
+    if ext == ".tl" then
+        local luacode, err = teal.transpile(code, filename)
+        
+        if luacode == nil then
+            return nil, err
+        end
+        code = luacode
+    end
     return load(code, "@" .. filename .. (ext == ".tl" and ".lua" or ""), mode, env)
 end
 
