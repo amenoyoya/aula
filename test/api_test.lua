@@ -4,6 +4,8 @@ print("✅ Current directory:", __dir())
 assert(Aula.Path.getBaseName(__file()) == "api_test.lua")
 print("✅ Current file:", __file())
 
+assert(Aula.Path.getBaseStem(os.argv[0]) == "aula")
+assert(os.argv[1] == "test")
 print("✅ os.argv", os.argv)
 
 print("\n⭐ Test for stdin/stdout")

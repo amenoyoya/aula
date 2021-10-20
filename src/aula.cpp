@@ -1,12 +1,6 @@
 ﻿#include <aula/lua.hpp>
-#include <map>
 
 __main() {
-    /// Aula Engine version
-    const char version[] =
-        "Aula Engine v.1.2.0 -- Copyright (C) 2021 amenoyoya. https://github.com/amenoyoya/aula\n"
-        "LuaJIT 2.1.0-beta3 -- Copyright (C) 2005-2017 Mike Pall. http://luajit.org/";
-
     /// Aula Lua Engine 準備
     sol::state lua;
     std::string errorMessage;
