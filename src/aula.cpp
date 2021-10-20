@@ -1,10 +1,32 @@
 ﻿#include <aula/lua.hpp>
 #include <map>
 
+/// Identifies if the file is a test target
+// * test target: `*_test.lua`, `*_test.tl`
+bool isTestFile(const std::string &filename) {
+    std::string targets[] = {
+        "_test.lua", "_test.tl",
+    };
+    u32 filenameSize = filename.size();
+    for (u32 i = 0; i < 2; ++i) {
+        u32 targetSize = targets[i].size();
+        if (filenameSize >= targetSize && filename.substr(filenameSize - targetSize) == targets[i]) return true;
+    }
+    return false;
+}
+
+/// Execute a Lua or Teal script file
+// * call lua function: `dofile` (@see src/aula/lua/stdlib/system.lua)
+inline sol::protected_function_result executeScriptFile(sol::state &lua, const std::string &filename) {
+    return lua.safe_script(
+        "dofile(\"" + Aula::Encoding::replaceString(Aula::Encoding::replaceString(filename, "\\", "\\\\"), "\"", "\\\"") + "\")"
+    );
+}
+
 __main() {
     /// Aula Engine version
     const char version[] =
-        "Aula Engine v.1.1.1 -- Copyright (C) 2021 amenoyoya. https://github.com/amenoyoya/aula\n"
+        "Aula Engine v.1.2.0 -- Copyright (C) 2021 amenoyoya. https://github.com/amenoyoya/aula\n"
         "LuaJIT 2.1.0-beta3 -- Copyright (C) 2005-2017 Mike Pall. http://luajit.org/";
 
     /// Aula Lua Engine 準備
@@ -37,13 +59,15 @@ __main() {
                     "\tversion\tdisplay Aula version\n"
                     "\ttest\texecute test codes\n"
                     "\t\tUsage:\taula test [directory (default: ./)]\n"
-                    "\t\tDescription:\tAula will execute test script files like \"*_test.lua\" in the target directory and the sub directories\n"
+                    "\t\tDescription:\tAula will execute test script files like \"*_test.lua\", \"*_test.tl\" in the target directory and the sub directories\n"
                     "\n"
                     "The script file will be executed:\n"
                     "\tIf the command line arguments[1] is \"*.lua\" file (Plain lua source code file)\n"
                     "\tOr if the command line arguments[1] is \"*.sym\" file (Compiled lua byte code file)\n"
+                    "\tOr if the command line arguments[1] is \"*.tl\" file (Teal source code file)\n"
                     "\tOr if the \"main.lua\" file exists at the directory containing Aula\n"
                     "\tOr if the \"main.sym\" file exists at the directory containing Aula\n"
+                    "\tOr if the \"main.tl\" file exists at the directory containing Aula\n"
                     "\n"
                     "Aula will be executed as interactive-mode if there are no commands and script files.\n"
                 );
@@ -66,11 +90,11 @@ __main() {
                 u32 testStart = Aula::System::getTime(); // テスト実行時間計測
 
                 for (auto file = files.begin(); file != files.end(); ++file) {
-                    if (file->path.size() < compareSize || file->path.substr(file->path.size() - compareSize) != compareStr) continue;
+                    if (!isTestFile(file->path)) continue;
                     
                     // test code 実行時間計測
                     u32 start = Aula::System::getTime();
-                    auto result = lua.safe_script_file(file->path);
+                    auto result = executeScriptFile(lua, file->path);
 
                     if (result.valid()) { // OK
                         Aula::IO::Stdout->write(_U8("✅ ") + file->path + " (" + Aula::Encoding::toString(Aula::System::getTime() - start) + " ms)");
@@ -92,9 +116,9 @@ __main() {
 
     /*
         メインスクリプト
-        1. 第1コマンドライン引数: *.lua | *.sym
-        2. 実行ファイルと同一ディレクトリにある main.lua | main.sym
-            - os.argv[1] に main.lua | main.sym がセットされる
+        1. 第1コマンドライン引数: *.lua | *.sym | *.tl
+        2. 実行ファイルと同一ディレクトリにある main.lua | main.sym | main.tl
+            - os.argv[1] に main.lua | main.sym | main.tl がセットされる
     */
     bool hasMainScript = false;
 
@@ -107,7 +131,7 @@ __main() {
 
         // Lua script file が渡されている場合
         std::string ext = Aula::Path::getExtension(arguments[1]);
-        if (ext == ".lua" || ext == ".sym") {
+        if (ext == ".lua" || ext == ".sym" || ext == ".tl") {
             hasMainScript = true;
             arguments[1] = Aula::Path::complete(arguments[1]); // to full path
         }
@@ -120,6 +144,9 @@ __main() {
         } else if (Aula::Path::isFile(dirname + "main.sym")) {
             hasMainScript = true;
             arguments.insert(arguments.begin() + 1, dirname + "main.sym");
+        } else if (Aula::Path::isFile(dirname + "main.tl")) {
+            hasMainScript = true;
+            arguments.insert(arguments.begin() + 1, dirname + "main.tl");
         }
     }
 
@@ -130,11 +157,11 @@ __main() {
         return 0;
     }
     
-    // execute lua script
-    lua.safe_script_file(arguments[1], [](lua_State*, sol::protected_function_result pfr) {
-        sol::error err = pfr;
-        Aula::IO::Stderr->write(Aula::Encoding::toUTF8(err.what()));
-        return pfr;
-    });
-    return 0;
+    // execute lua | teal script
+    auto result = executeScriptFile(lua, arguments[1]);
+    if (result.valid()) return 0;
+
+    sol::error err = result;
+    Aula::IO::Stderr->write(Aula::Encoding::toUTF8(err.what()));
+    return 1;
 }

@@ -1,11 +1,19 @@
 ﻿--- overload lua standard load function ---
 
 -- @param {string} filename
+--     - `*.lua`: load as a lua code
+--     - `*.sym`: load as a compiled lua byte code (mode must be set)
+--     - `*.tl`:  load as a teal code
 -- @param {string} mode (default: "bt"): {"b": バイナリモード, "t": テキストモード, "bt": バイナリ＋テキストモード}
 -- @param {table} env (default: _ENV)
 -- @returns ({function} func, {string} errorMessage)
 function loadfile(filename, mode, env)
-    return load(Aula.IO.readFile(filename):toString(), filename, mode, env)
+    local code = Aula.IO.readFile(filename):toString()
+    local ext = Aula.Path.getExtension(filename)
+
+    -- transpile teal => lua if the file is `*.tl`
+    code = (ext == ".tl" and teal.transpile(code:encode(), filename) or code)
+    return load(code, "@" .. filename .. (ext == ".tl" and ".lua" or ""), mode, env)
 end
 
 -- @param {string} filename
@@ -49,7 +57,7 @@ function include(modname)
 end
 
 -- package path for searching
-package.libpath = {"?", "?.lua", "?.sym", "?/main.lua", "?/main.sym", "?.dll", "?.so"}
+package.libpath = {"?", "?.lua", "?.sym", "?.tl", "?/main.lua", "?/main.sym", "?/main.tl", "?.dll", "?.so"}
 
 -- appendix loader for searching package.libpath
 package.loaders[3] = function (filename)
@@ -76,8 +84,8 @@ package.loaders[3] = function (filename)
                 return loader
             end
             
-            -- 拡張子が lua, sym なら loadfile
-            if ext == ".lua" or ext == ".sym" then
+            -- 拡張子が lua, sym, tl なら loadfile
+            if ext == ".lua" or ext == ".sym" or ext == ".tl" then
                 local loader, err = loadfile(filepath)
                 if not loader then
                     error(err)

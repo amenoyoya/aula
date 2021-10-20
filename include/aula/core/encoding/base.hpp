@@ -34,8 +34,11 @@ namespace Aula {
         i8 isUTF8(const std::string &target);
         
         /// 対象文字列を任意のフォーマットにエンコード
-        // fromEncoding: 対象文字列のエンコーディングタイプ。ENC_UNKNOWNなら自動判別
-        std::string encode(const std::string &target, u8 toEncoding, u8 fromEncoding = UNKNOWN);
+        // @param toEncoding: 変換先のエンコーディングタイプ
+        //                    Type::Encoding なら変換せず、UTF8 with BOM の場合は BOM 削除のみ行う
+        // @param fromEncoding: 対象文字列のエンコーディングタイプ
+        //                      Type::UNKNOWN なら自動判別
+        std::string encode(const std::string &target, u8 toEncoding = UNKNOWN, u8 fromEncoding = UNKNOWN);
         
         /// 対象文字列をUTF-8にエンコーディング
         // fromEncoding: 対象文字列のエンコーディングタイプ。ENC_UNKNOWNなら自動判別
