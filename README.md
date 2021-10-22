@@ -95,6 +95,16 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 ###   - ./test/api_test.lua
 ###   - ./test/dotty_test.lua
 ###   - ./test/readln_test.lua
+
+
+# Teal compiler error test
+$ .\dist\bin\x86\aula .\teal_test\main.tl
+
+========================================
+3 errors:
+.\teal_test\main.tl:5:10: cannot add undeclared function 'hello' outside of the scope where 'Character' was originally declared
+.\teal_test\main.tl:16:4: invalid key 'hello' in record 'ch' of type Character
+.\teal_test\main.tl:17:8: argument 1: got {integer} (inferred at .\teal_test\main.tl:17:9), expected Move
 ```
 
 ***
@@ -141,6 +151,16 @@ $ ./dist/bin/x64/aula test ./test
 ###   - ./test/api_test.lua
 ###   - ./test/dotty_test.lua
 ###   - ./test/readln_test.lua
+
+
+# Teal compiler error test
+$ ./dist/bin/x64/aula ./teal_test/main.tl
+
+========================================
+3 errors:
+./teal_test/main.tl:5:10: cannot add undeclared function 'hello' outside of the scope where 'Character' was originally declared
+./teal_test/main.tl:16:4: invalid key 'hello' in record 'ch' of type Character
+./teal_test/main.tl:17:8: argument 1: got {integer} (inferred at ./teal_test/main.tl:17:9), expected Move
 ```
 
 ***

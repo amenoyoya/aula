@@ -1,4 +1,4 @@
-﻿local f, err = loadfile(__dir() .. "/../loadsample/bufsample.sym")
+﻿local f, err = loadfile(package.__dir .. "/../loadsample/bufsample.sym")
 if f == nil then
     error(err)
 end
