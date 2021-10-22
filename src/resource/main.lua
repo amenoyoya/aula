@@ -1,5 +1,5 @@
 ﻿-- version
-Aula.version = "v1.3.0"
+Aula.version = "v1.3.1"
 
 -- help text
 local helpText = [==[
@@ -139,12 +139,20 @@ local commands = {
 
             -- test code execution time
             local start = os.systime()
-            local result, err = pcall(loadfile(file.path), "@" .. file.path)
+            local f, err = loadfile(file.path)
 
-            if result then -- OK
-                printf("✅ %s (%d ms)\n", file.path, os.systime() - start)
-                cntOK = cntOK + 1
-            else -- NG
+            if f then
+                local result, err = pcall(f, "@" .. file.path)
+
+                if result then -- OK
+                    printf("✅ %s (%d ms)\n", file.path, os.systime() - start)
+                    cntOK = cntOK + 1
+                else -- NG
+                    printf("❌ %s (%d ms)\n", file.path, os.systime() - start)
+                    print(err)
+                    cntNG = cntNG + 1
+                end
+            else -- syntax error
                 printf("❌ %s (%d ms)\n", file.path, os.systime() - start)
                 print(err)
                 cntNG = cntNG + 1
