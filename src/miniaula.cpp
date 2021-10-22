@@ -18,10 +18,14 @@ __main() {
 
     /// main script: os.argv[2].lua
     // * if no os.argv[2], execute as interactive-mode
+    // * set package.__chunk, package.__dir
     if (arguments.size() < 2) {
         Aula::Lua::dotty(lua);
         return 0;
     }
+    auto package = lua["package"].get_or_create<sol::table>();
+    package["__chunk"] = arguments[1];
+    package["__dir"] = Aula::Path::getParentDirectory(arguments[1]);
     auto result = lua.safe_script_file(arguments[1]);
     if (result.valid()) return 0;
 

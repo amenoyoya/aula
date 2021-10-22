@@ -8961,40 +8961,5 @@ tl.load = function(input, chunkname, mode, ...)
 end
 
 
---[[
-   Code for aula engine
-   - Set this module as a global module `teal`
-   - Add function `teal.transpile` for converting teal => lua code
-]]
-
+-- Set this module as a global module `teal` for Aula engine
 teal = tl
-
--- @param {string} input: teal source code
--- @param {string} module_name: source code name for displaying compile error
--- @returns {string|nil, string|nil} lua_code, error_message
-teal.transpile = function (input, module_name)
-   local errs = {}
-   local _, program = teal.parse_program(
-      teal.lex(input:sub(1, 3) == "\xEF\xBB\xBF" and input:sub(4) or input), -- skip BOM
-      errs,
-      module_name
-   )
-   
-   if #errs > 0 then
-      return nil, module_name .. ":" .. errs[1].y .. ":" .. errs[1].x .. ": " .. errs[1].msg
-   end
-
-   local lax = not not module_name:match("lua$")
-   if not teal.package_loader_env then
-      teal.package_loader_env = teal.init_env(lax)
-   end
-
-   teal.type_check(program, {
-      lax = lax,
-      filename = module_name,
-      env = teal.package_loader_env,
-      run_internal_compiler_checks = false,
-   })
-
-   return teal.pretty_print_ast(program, true), nil
-end

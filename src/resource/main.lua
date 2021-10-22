@@ -1,5 +1,5 @@
 ﻿-- version
-Aula.version = "v1.2.0"
+Aula.version = "v1.3.0"
 
 -- help text
 local helpText = [==[
@@ -42,6 +42,39 @@ end
 -- os.argv[0] <= The Aula engine path
 os.argv[0] = os.argv[1]
 table.remove(os.argv, 1)
+
+-- extended package loader: search from current application (os.arv[0]) resource
+table.insert(package.loaders, 1, function (module_name)
+    local arc = Aula.Zip.Archiver.new(os.argv[0], "r")
+    if arc:getState() == Aula.Object.State.FAILED then
+        return "\n\tcurrent application has no resource: '" .. os.argv[0] .. "'"
+    end
+
+    local error_message = ""
+    for _, ext in ipairs{"", ".lua", ".sym", ".tl"} do
+        if arc:locateFile(module_name .. ext) then
+            local info = arc:getCurrentFileInformation(true)
+
+            if info.uncompressedData:getSize() > 0 then
+                arc:close()
+                
+                local loader, err = load(info.uncompressedData:toString(), "@aula://" .. module_name .. ext)
+                if loader == nil then
+                    error(err)
+                end
+                return loader
+            end
+        end
+        error_message = error_message .. "\n\tno file 'aula://" .. module_name .. ext .. "'"
+    end
+    arc:close()
+    return error_message
+end)
+
+-- require aula://@system
+-- * teal language system
+-- * relative require package system
+require "@system"
 
 -- CLI commands
 local commands = {
@@ -133,7 +166,7 @@ if f then
 end
 
 -- case: "{__dir}/main.lua" or "{__dir}/main.sym" or "{__dir}/main.tl" script file exists
-local dir = Aula.Path.appendSlash(__dir())
+local dir = Aula.Path.appendSlash(Aula.Path.getParentDirectory(os.argv[0]))
 local function doMainScript(scriptFile)
     if Aula.Path.isFile(scriptFile) then
         table.insert(os.argv, 1, scriptFile) -- os.argv[1] <= main script file

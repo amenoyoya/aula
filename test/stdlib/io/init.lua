@@ -1,12 +1,12 @@
 using(Aula) -- Aula.* => _GLOBAL.*
 
 --[[ clean up previous garbage ]]
-IO.removeDirectory(__dir() .. "/iosample")
-IO.removeFile(__dir() .. "/iosample.zip")
+IO.removeDirectory(package.__dir .. "/iosample")
+IO.removeFile(package.__dir .. "/iosample.zip")
 
 
 --[[ write file sample ]]
-local file = IO.File.new(__dir() .. "/iosample/sample.txt", "wb")
+local file = IO.File.new(package.__dir .. "/iosample/sample.txt", "wb")
 local text = [[
 このファイルは Aula.IO.File に作成されたサンプルファイルです。
 ⭕ UTF-8 でコーディングされていれば文字化けすることなく作成されているはずです。]]
@@ -19,13 +19,13 @@ file:write(text, false) -- no crlf appendix
 file:close() -- or file:flush()
 
 -- test
-print(IO.readFile(__dir() .. "/iosample/sample.txt"):toString())
-assert(IO.readFile(__dir() .. "/iosample/sample.txt"):toString() == text)
+print(IO.readFile(package.__dir .. "/iosample/sample.txt"):toString())
+assert(IO.readFile(package.__dir .. "/iosample/sample.txt"):toString() == text)
 printf("✅ OK: Aula.IO.File:write\n\tsample.txt: %s\n", text)
 
 
 --[[ read file sample ]]
-file = IO.File.new(__dir() .. "/iosample/sample.txt")
+file = IO.File.new(package.__dir .. "/iosample/sample.txt")
 
 if file:getState() == Object.State.FAILED then
     error(file:getMessage())
@@ -61,12 +61,12 @@ printf("✅ OK: Aula.IO.File.open: %s\n", errfile:getMessage())
 
 
 -- FileSystem
-assert(IO.copyFile(__dir() .. "/iosample/sample.txt", __dir() .. "/iosample/sample_copied.txt"))
-assert(file:open(__dir() .. "/iosample/sample_copied.txt", "r"))
+assert(IO.copyFile(package.__dir .. "/iosample/sample.txt", package.__dir .. "/iosample/sample_copied.txt"))
+assert(file:open(package.__dir .. "/iosample/sample_copied.txt", "r"))
 file:close()
 print "✅ OK: Aula.IO.copyFile"
 
-assert(IO.copyDirectory(__dir() .. "/iosample", __dir() .. "/iosample/copied_directory"))
+assert(IO.copyDirectory(package.__dir .. "/iosample", package.__dir .. "/iosample/copied_directory"))
 
 local files = {
     "copied_directory",
@@ -75,17 +75,17 @@ local files = {
     "sample.txt",
     "sample_copied.txt"
 }
-local dirlen = (__dir() .. '/iosample/'):u8len()
+local dirlen = (package.__dir .. '/iosample/'):u8len()
 
 print "✅ Check: Aula.IO.enumerateFiles (nested)"
-for i, file in ipairs(IO.enumerateFiles(__dir() .. "/iosample")) do
+for i, file in ipairs(IO.enumerateFiles(package.__dir .. "/iosample")) do
     file = file.path:u8sub(dirlen + 1):replace('\\', '/')
     print("\t" .. file)
     assert(file == files[i])
 end
 
 print "✅ Check: Aula.IO.enumerateFiles (file only)"
-for i, file in ipairs(IO.enumerateFiles(__dir() .. "/iosample", -1, Aula.IO.EnumFileOption.FILE)) do
+for i, file in ipairs(IO.enumerateFiles(package.__dir .. "/iosample", -1, Aula.IO.EnumFileOption.FILE)) do
     file = file.path:u8sub(dirlen + 1):replace('\\', '/')
     print("\t" .. file)
     assert(file == files[i + 1])
@@ -94,10 +94,10 @@ end
 table.remove(files, 3)
 table.remove(files, 2)
 print "✅ Check: Aula.IO.enumerateFiles (not nested)"
-for i, file in ipairs(IO.enumerateFiles(__dir() .. "/iosample", 1)) do
+for i, file in ipairs(IO.enumerateFiles(package.__dir .. "/iosample", 1)) do
     file = file.path:u8sub(dirlen + 1):replace('\\', '/')
     print("\t" .. file)
     assert(file == files[i])
 end
 
-include "zip" -- require {__dir}/zip.lua
+require "./zip" -- require {__dir}/zip.lua

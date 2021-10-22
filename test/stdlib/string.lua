@@ -1,4 +1,4 @@
-﻿include "base" -- require */test/stdlib/base.lua
+﻿require "base" -- require */test/stdlib/base.lua
 
 local byte = ("あ"):u8byte(1)
 assert(byte == 12354)
