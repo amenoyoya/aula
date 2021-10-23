@@ -24,5 +24,20 @@ namespace Aula {
         path.set_function("complete", Path::complete);
         path.set_function("appendSlash", Path::appendSlash);
         path.set_function("removeSlash", Path::removeSlash);
+
+        path.new_usertype<Path::FileStatus>("FileStatus",
+            "deviceId", &Path::FileStatus::deviceId,
+            "inode", &Path::FileStatus::inode,
+            "accessMode", &Path::FileStatus::accessMode,
+            "nLinks", &Path::FileStatus::nLinks,
+            "userId", &Path::FileStatus::userId,
+            "groupId", &Path::FileStatus::groupId,
+            "specialDeviceId", &Path::FileStatus::specialDeviceId,
+            "size", &Path::FileStatus::size,
+            "lastAccessedSeconds", &Path::FileStatus::lastAccessedSeconds,
+            "lastModifiedSeconds", &Path::FileStatus::lastModifiedSeconds,
+            "lastChangedSeconds", &Path::FileStatus::lastChangedSeconds
+        );
+        path.set_function("getFileStatus", Path::getFileStatus);
     }
 }

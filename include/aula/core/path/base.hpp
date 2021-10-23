@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <aula/core/encoding/base.hpp>
+#include <memory>
 
 namespace Aula {
     /// ファイルパスライブラリ
@@ -39,5 +40,20 @@ namespace Aula {
         
         /// パスの末尾の'/\'を削除
         std::string removeSlash(std::string path);
+
+        /// structure FileStatus
+        struct FileStatus {
+            u32 deviceId, inode;
+            u16 accessMode;
+            i16 nLinks, userId, groupId;
+            u32 specialDeviceId;
+            u64 size, // file size
+                lastAccessedSeconds, // last accessed time (sec)
+                lastModifiedSeconds, // last modified time (sec)
+                lastChangedSeconds;  // last file status changed time (sec)
+        };
+
+        /// Get the file status
+        std::unique_ptr<FileStatus> getFileStatus(const std::string &path);
     }
 }

@@ -1,0 +1,18 @@
+class Hoge {
+    pri let val: int {pub};
+}
+alge Test {
+    Val1,
+    Val2(int),
+    Val3(str),
+    Val4(Hoge),
+    Val5(num: int, txt:str),
+}
+
+let val1 = Test.Val1;
+let val2 = Test.Val2( 1 );
+let val3 = Test.Val3( "abc" );
+let val4 = Test.Val4( new Hoge( 100 ) );
+let val5 = Test.Val5( 10, "xyz" );
+
+print(val1, val2, val3, val4, val5);
