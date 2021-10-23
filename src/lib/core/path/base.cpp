@@ -2,6 +2,7 @@
 
 #ifdef _WINDOWS
     #include <shlwapi.h>
+    #include <sys/stat.h>
 #else
     #include <sys/stat.h>
 #endif
@@ -172,6 +173,16 @@ namespace Aula {
                 if (*it == '/' || *it == '\\') path.erase(it);
                 return std::move(path);
             }
+
+            std::unique_ptr<FileStatus> getFileStatus(const std::string &path) {
+                struct _stat s;
+                if (_wstat(Encoding::utf8ToWideString(path).c_str(), &s) != 0) return nullptr;
+                return std::unique_ptr<FileStatus>(new FileStatus{
+                    s.st_dev, s.st_ino, s.st_mode, s.st_nlink,
+                    s.st_uid, s.st_gid, s.st_rdev, (u64)s.st_size,
+                    (u64)s.st_atime, (u64)s.st_mtime, (u64)s.st_ctime
+                });
+            }
         #else
             /* UNIX版ファイル判定,フルパス取得など */
             bool isFile(const std::string &path) {
@@ -200,6 +211,16 @@ namespace Aula {
                 auto it = path.end() - 1;
                 if (*it == '/') path.erase(it);
                 return std::move(path);
+            }
+
+            std::unique_ptr<FileStatus> getFileStatus(const std::string &path) {
+                struct stat s;
+                if (stat(path.c_str(), &s) != 0) return nullptr;
+                return std::unique_ptr<FileStatus>(new FileStatus{
+                    s.st_dev, s.st_ino, s.st_mode, s.st_nlink,
+                    s.st_uid, s.st_gid, s.st_rdev, s.st_size,
+                    s.st_atim.tv_sec, s.st_mtim.tv_sec, s.st_ctim.tv_sec
+                });
             }
         #endif
     }
