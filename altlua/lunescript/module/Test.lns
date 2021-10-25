@@ -1,0 +1,9 @@
+﻿import module.hoge as hoge;
+
+pub alge Test {
+    Val1,
+    Val2(int),
+    Val3(str),
+    Val4(hoge.Hoge),
+    Val5(num: int, txt:str),
+}
