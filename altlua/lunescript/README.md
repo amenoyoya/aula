@@ -9,6 +9,9 @@
 - `lune/base/Depend.lua`
     - in function: `getFileLastModifiedTime`
         - use `Aula.Path.getFileStatus`
+- `lune/base/TransUnit.lua`
+    - import module エラー時に table print して stack overflow を起こすため、その部分を削除
+        - comment out: `print( work, self.moduleScope )`
 - `lnsc.lua`
     - global variable: `arg`
         - use `os.argv`

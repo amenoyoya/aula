@@ -9964,7 +9964,7 @@ function TransUnit:analyzeExpSymbol( firstToken, symbolToken, mode, prefixExp, s
                if self.analyzeMode ~= AnalyzeMode.Diag then
                   local work = self:get_scope()
                   while true do
-                     print( work, self.moduleScope )
+                     -- print( work, self.moduleScope )
                      if work == work:get_parent() then
                         break
                      end

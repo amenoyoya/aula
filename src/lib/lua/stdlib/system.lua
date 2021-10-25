@@ -1,4 +1,7 @@
-﻿-- UTF-8文字列出力関数
+﻿-- table print 時に serialize するかどうか
+table.print_flag = true -- true: print(tbl) => table.serialize(tbl, 2, true)
+
+-- UTF-8文字列出力関数
 -- デフォルト print 関数を overload
 function print(...)
     local list = {...}
@@ -8,7 +11,7 @@ function print(...)
     else
         for i = 1, n do
             Aula.IO.Stdout:write(
-                (i == 1 and "" or "\t") .. (type(list[i]) == 'table' and table.serialize(list[i], 2) or tostring(list[i])),
+                (i == 1 and "" or "\t") .. ((type(list[i]) == 'table' and table.print_flag) and table.serialize(list[i], 2, true) or tostring(list[i])),
                 false
             )
         end

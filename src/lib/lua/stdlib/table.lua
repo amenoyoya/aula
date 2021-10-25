@@ -64,6 +64,17 @@ function table:getclone()
     end
 end
 
+-- テーブルのスライスを取得
+function table.slice(self, from, to)
+    local new = {}
+    from = from or 1
+    to = to or #self
+    for i = 1, to - from + 1 do
+        new[i] = self[i + from - 1]
+    end
+    return new
+end
+
 
 --- テーブルシリアライズ ---
 local escape_char_map = {
@@ -98,9 +109,12 @@ local function value2str(v, all)
         return '"' .. escape_string(v) .. '"'
     elseif vt == 'boolean' then
         return tostring(v)
+    elseif vt == 'table' then
+        return tostring(v)
     elseif all then
         return tostring(v)
     end
+    return ""
 end
 
 -- @private Luaテーブルのフィールド部分を文字列化
@@ -113,7 +127,7 @@ end
 
 -- @private テーブルシリアライズ（基底）
 -- @param {table} tbl
--- @param {boolean} all: true なら関数やユーザデータも文字列化
+-- @param {boolean} all: true なら関数やユーザデータも文字列化し、table を再帰的に文字列化
 -- @param {number} space_count: テーブル階層のインデント幅
 -- @param {string} space: テーブル階層の現在のインデント
 local function serialize_table(tbl, all, space_count, space)
@@ -130,7 +144,7 @@ local function serialize_table(tbl, all, space_count, space)
             if buf ~= "" then
                 buf = buf .. "," .. next_space
             end
-            buf = buf.. field2str(f) .. serialize_table(v, all, space_count, next_space)
+            buf = buf.. field2str(f) .. (all and serialize_table(v, all, space_count, next_space) or value2str(v))
         else
             local value = value2str(v, all)
             if value then
