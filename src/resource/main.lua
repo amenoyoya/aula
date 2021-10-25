@@ -43,6 +43,10 @@ end
 os.argv[0] = os.argv[1]
 table.remove(os.argv, 1)
 
+-- package path for searching
+package.path = "?.lua;?.sym;?.tl;?/init.lua;?/init.sym;?/init.tl;" .. package.path
+package.cpath = "?.dll;?.so;" .. package.cpath
+
 -- extended package loader: search from current application (os.arv[0]) resource
 table.insert(package.loaders, 1, function (module_name)
     local arc = Aula.Zip.Archiver.new(os.argv[0], "r")
@@ -51,21 +55,23 @@ table.insert(package.loaders, 1, function (module_name)
     end
 
     local error_message = ""
-    for _, ext in ipairs{"", ".lua", ".sym", ".tl"} do
-        if arc:locateFile(module_name .. ext) then
+    module_name = module_name:gsub("%.", "/") -- "." => "/"
+
+    for entry in package.path:gmatch("[^;]+") do
+        if arc:locateFile(entry:replace("?", module_name)) then
             local info = arc:getCurrentFileInformation(true)
 
             if info.uncompressedData:getSize() > 0 then
                 arc:close()
                 
-                local loader, err = load(info.uncompressedData:toString(), "@aula://" .. module_name .. ext)
+                local loader, err = load(info.uncompressedData:toString(), "@aula://" .. module_name)
                 if loader == nil then
                     error(err)
                 end
                 return loader
             end
         end
-        error_message = error_message .. "\n\tno file 'aula://" .. module_name .. ext .. "'"
+        error_message = error_message .. "\n\tno file 'aula://" .. module_name .. "'"
     end
     arc:close()
     return error_message

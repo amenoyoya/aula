@@ -1,16 +1,20 @@
-﻿-- compile resources
-local function compileResource(name)
-    local f, err = load(Aula.IO.readFile(package.__dir .. "/resource/" .. name .. ".lua"):toString(), "@aula://" .. name)
+﻿-- compile lua => sym, and append sym to resource
+-- @param {Aula.Zip.Archiver} arc
+-- @param {string} luafile
+-- @param {string} rootdir
+local function appendLuaToResource(arc, luafile, rootdir)
+    local resname = luafile:sub(rootdir:len() + 2):sub(1, -5)
+    local f, err = load(Aula.IO.readFile(luafile):toString(), "@aula://" .. resname)
     if f == nil then
         error(err)
     end
-    return f
+    
+    local bytecode = string.dump(f)
+    if not arc:append(Aula.IO.Binary.new(bytecode, bytecode:len()), resname .. ".sym") then
+        errorf("failed to append %s", resname .. ".sym")
+    end
+    printf("%s.lua has been bundled into aula://%s.sym\n", resname, resname)
 end
-
-local main = compileResource "main"
-local system = compileResource "@system"
-local compat53 = compileResource "compat53"
-local compat53module = compileResource "compat53.module"
 
 -- open aula application as archive
 local aula = package.__dir .. "/aula" .. (ffi.os == "Windows" and ".exe" or "")
@@ -20,16 +24,13 @@ if arc:getState() == Aula.Object.State.FAILED then
     error(arc:getMessage())
 end
 
--- append resources
-local function appendResource(arc, data, name)
-    local bytecode = string.dump(data)
-    if not arc:append(Aula.IO.Binary.new(bytecode, bytecode:len()), name .. ".sym") then
-        errorf("failed to append %s.sym", name)
-    end
-    printf("resource/%s.lua has been bundled into aula://%s.sym\n", name, name)
-end
+-- append lua scripts as resource
+local dir = package.__dir .. "/resource"
+local files = Aula.IO.enumerateFiles(dir)
 
-appendResource(arc, main, "main")
-appendResource(arc, system, "@system")
-appendResource(arc, compat53, "compat53")
-appendResource(arc, compat53module, "compat53.module")
+for _, file in ipairs(files) do
+    if Aula.Path.getExtension(file.path) == ".lua" then
+        local filepath, _ = file.path:gsub("\\", "/")
+        appendLuaToResource(arc, filepath, dir)
+    end
+end
