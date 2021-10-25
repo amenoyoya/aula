@@ -1,4 +1,8 @@
-﻿require "base" -- require */test/stdlib/base.lua
+﻿local base = require "./base" -- require */test/stdlib/base.lua
+
+assert(base.filename:u8sub(-8) == "base.lua")
+assert(base.directory:u8sub(-6) == "stdlib")
+printf("✅ OK: required './base' module info:\n\tfilename: %s\n\tdirectory: %s\n", base.filename, base.directory)
 
 local byte = ("あ"):u8byte(1)
 assert(byte == 12354)

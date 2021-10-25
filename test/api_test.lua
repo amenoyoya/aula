@@ -9,7 +9,7 @@ assert(os.argv[1] == "test")
 print("✅ os.argv", os.argv)
 
 print("\n⭐ Test for stdin/stdout")
-require(package.__dir .. "/base")
+require("./base") -- module name has "/" => relative require: require {__dir}/base.lua
 
 print("\n⭐ Test for string library")
 require "stdlib/string" -- require {__dir}/stdlib/string.lua
