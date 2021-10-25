@@ -1,5 +1,5 @@
-local Point = require 'point'
-local Move = require 'move'
+local Point = require './point'
+local Move = require './move'
 
 local record Character
     position: Point
