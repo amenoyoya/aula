@@ -1,5 +1,5 @@
-local Character = require "character"
-local Move = require "move"
+local Character = require "./character"
+local Move = require "./move"
 
 -- following code is error: beacause Character.hello method not declared
 function Character:hello()
