@@ -531,7 +531,7 @@ usage:
 * type2
   path: output file path.
 ]==] )
-      os.exit( code )
+      error( "error code: " .. code )
    end
    
    local option = Option.new()
@@ -714,7 +714,7 @@ end
                   option.mode = ModeKind.Shebang
                elseif _switchExp == "--version" then
                   print( string.format( "LuneScript: version %s (%d:Lua%s) [%s]", Ver.version, getBuildCount(  ), Depend.getLuaVersion(  ), Ver.metaVersion) )
-                  os.exit( 0 )
+                  error( "error code: 0" )
                elseif _switchExp == "--projDir" then
                   option.projDir = getNextOp(  )
                elseif _switchExp == "--builtin" then
@@ -733,18 +733,18 @@ end
                      end
                   end
                   
-                  os.exit( 0 )
+                  error( "error code: 0" )
                elseif _switchExp == "-mklunemod" then
                   local path = getNextOp(  )
                   do
                      local mess = outputLuneMod( path )
                      if mess ~= nil then
                         Util.errorLog( mess )
-                        os.exit( 1 )
+                        error( "error code: 1" )
                      end
                   end
                   
-                  os.exit( 0 )
+                  error( "error code: 0" )
                elseif _switchExp == "--mkbuiltin" then
                   local path = getNextOp(  )
                   if  nil == path then
@@ -794,7 +794,7 @@ end
                      else 
                         
                            Util.errorLog( string.format( "unknown mode -- %s", opt) )
-                           os.exit( 1 )
+                           error( "error code: 1" )
                      end
                   end
                   
@@ -875,7 +875,7 @@ end
                else 
                   
                      Util.log( string.format( "unknown option -- '%s'", arg) )
-                     os.exit( 1 )
+                     error( "error code: 1" )
                end
             end
             

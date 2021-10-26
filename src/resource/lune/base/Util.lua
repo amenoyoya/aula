@@ -179,7 +179,7 @@ local function err( message )
    end
    
    errorLog( message )
-   os.exit( errorCode )
+   error( "error code: " .. errorCode )
 end
 _moduleObj.err = err
 local function splitStr( txt, pattern )

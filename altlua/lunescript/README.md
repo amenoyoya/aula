@@ -6,6 +6,7 @@
 
 - Replace: `io.stdout` => `Aula.IO.Stdout`
 - Replace: `io.stderr` => `Aula.IO.Stderr`
+- Replace: `os.exit(...)` => `error("error code: ...")`
 - `lune/base/Depend.lua`
     - in function: `getFileLastModifiedTime`
         - use `Aula.Path.getFileStatus`

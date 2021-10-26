@@ -680,7 +680,7 @@ function Front:error( message )
 
    Util.errorLog( message )
    Util.printStackTrace(  )
-   os.exit( 1 )
+   error( "error code: 1" )
 end
 
 
@@ -2735,7 +2735,7 @@ function Front:exec(  )
                local modObj = self:loadModule( (self:scriptPath2Module( self.option.scriptPath ) ) )
                if modObj ~= nil then
                   local code = Depend.runMain( modObj['__main'], self.option.shebangArgList )
-                  os.exit( code )
+                  error( "error code: " .. code )
                end
             end
             
@@ -2807,7 +2807,7 @@ local function exec( args )
    
    if version < 5.1 then
       Aula.IO.Stderr:write( string.format( "LuneScript doesn't support this lua version(%s). %s\n", version, "please use the version >= 5.1." ) )
-      os.exit( 1 )
+      error( "error code: 1" )
    end
    
    
