@@ -1,0 +1,2 @@
+﻿// lunescript project settings
+{}

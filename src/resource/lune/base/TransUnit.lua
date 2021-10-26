@@ -1500,7 +1500,7 @@ function TransUnit:dumpSymbolType( accessMode, name, typeInfo )
    writer:endElement(  )
    writer:endElement(  )
    writer:fin(  )
-   os.exit( 0 )
+   error( "error code: 0" )
 end
 function TransUnit:errorShadowingOp( pos, symbolInfo, errFlag )
 
@@ -9306,7 +9306,7 @@ function TransUnit:checkComp( token, callback )
          jsonWriter:endElement(  )
          jsonWriter:endElement(  )
          jsonWriter:fin(  )
-         os.exit( 0 )
+         error( "error code: 0" )
       end
       
    end
@@ -12478,7 +12478,7 @@ function TransUnitCtrl:createAST( parserSrc, asyncParse, baseDir, stdinFile, mac
    do
       local _switchExp = self.analyzeMode
       if _switchExp == AnalyzeMode.Diag or _switchExp == AnalyzeMode.Complete or _switchExp == AnalyzeMode.Inquire then
-         os.exit( 0 )
+         error( "error code: 0" )
       end
    end
    
