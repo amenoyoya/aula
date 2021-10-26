@@ -8,10 +8,10 @@ Hello,
     }
 }
 
-local serialized = table.serialize(tbl)
+local serialized = table.serialize(tbl, 0, true)
 assert(serialized == '{{1,2,"\\t\\u0007\\b"},["test"]="Hello,\\n\\"World\\""}')
 
-serialized = table.serialize(tbl, 2)
+serialized = table.serialize(tbl, 2, true)
 assert(serialized == [==[
 {
   {
