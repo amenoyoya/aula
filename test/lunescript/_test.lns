@@ -1,0 +1,45 @@
+﻿// to use lua `assert` function: call lua code from `_load` function
+fn assert(val: stem!) {
+    _load("return assert", val);
+}
+
+// to use lua `printf` function
+fn printf(format: str, ...<stem!>) {
+    let f, err = _load("return printf");
+    when! f {
+        f(format, ...);
+    } else {
+        error(unwrap err);
+    }
+}
+
+
+/// structure
+alge Test {
+    Val1,
+    Val2(int),
+    Val3(str),
+    Val4(num: int, txt:str),
+}
+
+// LuneScript not support function overload
+// => instead, use match-case
+fn func( test: Test ): str {
+    match test {
+        case .Val1 {
+            return test.$_txt;
+        }
+        case .Val2( x ) {
+            return test.$_txt .. "\t" .. tostring(x);
+        }
+        case .Val3( x ) {
+            return test.$_txt .. "\t" .. tostring(x);
+        }
+        case .Val4( x, y ) {
+            return test.$_txt .. "\t" .. tostring(x) .. "\t" .. tostring(y);
+        }
+    }
+}
+
+assert ( func(Test.Val1) == "100" );
+

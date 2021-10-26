@@ -1,0 +1,11 @@
+﻿let nilableInt: int! = 1;
+
+fn assert(check: stem!, line: int): stem! {
+    if not check {
+        error(package.__chunk .. ":" .. line .. ": assertion failed!");
+    }
+    return check;
+}
+
+assert(nilableInt == 2);
+// assert(nilableInt + 1 == 2); // error
