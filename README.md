@@ -21,12 +21,6 @@ A Lua script engine for a standalone utility application.
         - Load `compa53` module from the Aula engine resource (appended zip file). 
     - `require("compat53.module")`
         - Load `compa53.module` module from the Aula engine resource (appended zip file).
-- Supports [LuneScript](https://github.com/ifritJP/LuneScript)
-    - CLI interface:
-        - Execute command: `aula lune help`
-    - Script file execution: `aula <LuneScript file like "*.lns">`
-    - Document: https://ifritjp.github.io/documents/en/lunescript/
-    - VSCode syntax highlight is now developing: https://github.com/amenoyoya/vscode-lunescript
 
 ***
 
@@ -50,21 +44,17 @@ The commands are:
     compile     compile Lua / Teal code to byte-code
             Usage:          $ aula compile <input_lua_script_file> <output_byte_code_file>
             Description:    Aula will compile <input_lua_script_file> to <output_byte_code_file>
-    lune        execute LuneScript CLI
-            Help:           $ aula lune help
     test        execute test codes
             Usage:          $ aula test [directory (default: ./)]
-            Description:    Aula will execute test script files like "*_test.lua", "*_test.tl", "*_test.lns" in the <directory> and the sub directories
+            Description:    Aula will execute test script files like "*_test.lua", "*_test.tl" in the <directory> and the sub directories
 
 The script file will be executed:
     If the "main.lua" file exists at the directory containing Aula: execute a plain Lua script file
     Or if the "main.sym" file exists at the directory containing Aula: execute a compiled Lua byte-code file
     Or if the "main.tl" file exists at the directory containing Aula: execute a Teal script file
-    Or if the "main.lns" file exists at the directory containing Aula: execute a LuneScript file
     Or if the command line arguments[1] is "*.lua" file: execute a plain Lua script file
     Or if the command line arguments[1] is "*.sym" file: execute a ompiled Lua byte-code file
     Or if the command line arguments[1] is "*.tl" file: execute a Teal script file
-    Or if the command line arguments[1] is "*.lns" file: execute a LuneScript file
     
     
 Aula will be executed as interactive-mode if there are no commands and script files.

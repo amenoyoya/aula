@@ -17,21 +17,17 @@ The commands are:
     compile     compile Lua / Teal code to byte-code
             Usage:          $ aula compile <input_lua_script_file> <output_byte_code_file>
             Description:    Aula will compile <input_lua_script_file> to <output_byte_code_file>
-    lune        execute LuneScript CLI
-            Help:           $ aula lune help
     test        execute test codes
             Usage:          $ aula test [directory (default: ./)]
-            Description:    Aula will execute test script files like "*_test.lua", "*_test.tl", "*_test.lns" in the <directory> and the sub directories
+            Description:    Aula will execute test script files like "*_test.lua", "*_test.tl" in the <directory> and the sub directories
 
 The script file will be executed:
     If the "main.lua" file exists at the directory containing Aula: execute a plain Lua script file
     Or if the "main.sym" file exists at the directory containing Aula: execute a compiled Lua byte-code file
     Or if the "main.tl" file exists at the directory containing Aula: execute a Teal script file
-    Or if the "main.lns" file exists at the directory containing Aula: execute a LuneScript file
     Or if the command line arguments[1] is "*.lua" file: execute a plain Lua script file
     Or if the command line arguments[1] is "*.sym" file: execute a ompiled Lua byte-code file
     Or if the command line arguments[1] is "*.tl" file: execute a Teal script file
-    Or if the command line arguments[1] is "*.lns" file: execute a LuneScript file
     
     
 Aula will be executed as interactive-mode if there are no commands and script files.
@@ -48,7 +44,7 @@ os.argv[0] = os.argv[1]
 table.remove(os.argv, 1)
 
 -- package path for searching
-package.path = "?.lua;?.sym;?.tl;?.lns;?/init.lua;?/init.sym;?/init.tl;?/init.lns;" .. package.path
+package.path = "?.lua;?.sym;?.tl;?/init.lua;?/init.sym;?/init.tl;" .. package.path
 package.cpath = "?.dll;?.so;" .. package.cpath
 
 -- extended package loader: search from current application (os.arv[0]) resource
@@ -85,10 +81,6 @@ end)
 -- * teal language system
 -- * relative require package system
 require "@system"
-
--- require aula://@lunescript
--- * lunescript language system
-local lune = require "@lunescript"
 
 -- CLI commands
 local commands = {
@@ -140,14 +132,9 @@ local commands = {
         end
     end,
 
-    lune = function ()
-        -- Execute LuneScript CLI
-        lune.exec()
-    end,
-
     test = function ()
         -- Execute test codes in the target directory or current directory, and measure execution time
-        -- * Test codes: `*_test.lua` or `*_test.tl` or `*_test.lns`
+        -- * Test codes: `*_test.lua` or `*_test.tl`
         local files = Aula.IO.enumerateFiles(os.argv[2] or ".", -1, Aula.IO.EnumFileOption.FILE)
         local cntOK, cntNG = 0, 0 -- count of test results
         local testStart = os.systime() -- measure execution time
@@ -174,19 +161,6 @@ local commands = {
                     print(err)
                     cntNG = cntNG + 1
                 end
-            elseif file.path:match("_test%.lns$") then
-                -- test code execution time: lunescript
-                local start = os.systime()
-                local result, err = pcall(lune.dofile, file.path)
-
-                if result then -- OK
-                    printf("✅ %s (%d ms)\n", file.path, os.systime() - start)
-                    cntOK = cntOK + 1
-                else -- NG
-                    printf("❌ %s (%d ms)\n", file.path, os.systime() - start)
-                    print(err)
-                    cntNG = cntNG + 1
-                end
             end
         end
         -- display test summary
@@ -203,37 +177,28 @@ if f then
     os.exit(0)
 end
 
--- case: "{__dir}/main.lua" or "{__dir}/main.sym" or "{__dir}/main.tl" or "{__dir}/main.lns" script file exists
+-- case: "{__dir}/main.lua" or "{__dir}/main.sym" or "{__dir}/main.tl" script file exists
 local dir = Aula.Path.appendSlash(Aula.Path.getParentDirectory(os.argv[0]))
-local function doMainScript(scriptFile, lunescript)
+local function doMainScript(scriptFile)
     if Aula.Path.isFile(scriptFile) then
         table.insert(os.argv, 1, scriptFile) -- os.argv[1] <= main script file
-        if lunescript then
-            lune.dofile(scriptFile)
-        else
-            dofile(scriptFile)
-        end
+        dofile(scriptFile)
         os.exit(0)
     end
 end
 
-doMainScript(dir .. "main.lua", false)
-doMainScript(dir .. "main.sym", false)
-doMainScript(dir .. "main.tl", false)
-doMainScript(dir .. "main.lns", true)
+doMainScript(dir .. "main.lua")
+doMainScript(dir .. "main.sym")
+doMainScript(dir .. "main.tl")
 
--- case: argv[1] is "*.lua" or "*.sym" or "*.tl" or "*.lns" script file
+-- case: argv[1] is "*.lua" or "*.sym" or "*.tl" script file
 local scriptFile = os.argv[1]
 
 if scriptFile then
     local ext = Aula.Path.getExtension(scriptFile)
 
-    if (ext == ".lua" or ext == ".sym" or ext == ".tl" or ext == ".lns") and Aula.Path.isFile(scriptFile) then
-        if ext == ".lns" then
-            lune.dofile(scriptFile)
-        else
-            dofile(scriptFile)
-        end
+    if (ext == ".lua" or ext == ".sym" or ext == ".tl") and Aula.Path.isFile(scriptFile) then
+        dofile(scriptFile)
         os.exit(0)
     end
 end

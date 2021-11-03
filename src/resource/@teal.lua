@@ -8960,6 +8960,4 @@ tl.load = function(input, chunkname, mode, ...)
    return load(code, chunkname, mode, ...)
 end
 
-
--- Set this module as a global module `teal` for Aula engine
-teal = tl
+return tl
