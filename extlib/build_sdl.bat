@@ -3,10 +3,9 @@ cd %~dp0
 
 call ..\vcvars.bat
 
+:: SDL2 ::
 cd SDL2-2.0.16
-
 set cmpl=%compile% /D"_UNICODE" /D"UNICODE" /D"HAVE_LIBC" /D"NDEBUG"
-
 %cmpl% src\atomic\SDL_atomic.c
 %cmpl% src\atomic\SDL_spinlock.c
 %cmpl% src\audio\directsound\SDL_directsound.c
@@ -174,14 +173,100 @@ set cmpl=%compile% /D"_UNICODE" /D"UNICODE" /D"HAVE_LIBC" /D"NDEBUG"
 %cmpl% src\video\windows\SDL_windowsvulkan.c
 %cmpl% src\video\windows\SDL_windowswindow.c
 %cmpl% src\video\yuv2rgb\yuv_rgb.c
-
 lib.exe /OUT:"SDL2.lib" /NOLOGO *.obj
 del *.obj
 
 %cmpl% src\main\windows\SDL_windows_main.c
-
 lib.exe /OUT:"SDL2main.lib" /NOLOGO *.obj
 del *.obj
-
 move SDL2.lib ..\..\dist\lib\x86\
 move SDL2main.lib ..\..\dist\lib\x86\
+
+:: SDL_image ::
+cd %~dp0SDL2_image-2.0.5\external\jpeg-9b
+copy jconfig.h jconfig.h.bak
+copy /y jconfig.vc jconfig.h
+%compile% jaricom.c jcapimin.c jcapistd.c jcarith.c jccoefct.c jccolor.c ^
+        jcdctmgr.c jchuff.c jcinit.c jcmainct.c jcmarker.c jcmaster.c ^
+        jcomapi.c jcparam.c jcprepct.c jcsample.c jctrans.c jdapimin.c ^
+        jdapistd.c jdarith.c jdatadst.c jdatasrc.c jdcoefct.c jdcolor.c ^
+        jddctmgr.c jdhuff.c jdinput.c jdmainct.c jdmarker.c jdmaster.c ^
+        jdmerge.c jdpostct.c jdsample.c jdtrans.c jerror.c jfdctflt.c ^
+        jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c jquant1.c ^
+        jquant2.c jutils.c jmemmgr.c
+move /y jconfig.h.bak jconfig.h
+lib.exe /OUT:"libjpeg.lib" /NOLOGO *.obj
+move libjpeg.lib ..\..\..\..\dist\lib\x86\
+del *.obj
+
+cd ..\libpng-1.6.37
+%compile% *.c
+lib.exe /OUT:"libpng.lib" /NOLOGO *.obj
+move libpng.lib ..\..\..\..\dist\lib\x86\
+del *.obj
+
+cd ..\libwebp-1.0.2
+nmake -f Makefile.vc CFG=release-static OBJDIR=. RTLIBCFG=static target=all
+move release-static\x86\lib\*.lib ..\..\..\..\dist\lib\x86\
+rmdir /s /q release-static
+
+cd ..\tiff-4.0.9
+set JPEGDIR=%~dp0\SDL2_image-2.0.5\external\jpeg-9b
+copy libtiff/tiffconf.h libtiff/tiffconf.h.bak
+copy /y libtiff/tiffconf.vc.h libtiff/tiffconf.h
+nmake -f makefile.vc
+move /y libtiff/tiffconf.h.bak libtiff/tiffconf.h
+move libtiff\*.lib ..\..\..\..\dist\lib\x86\
+nmake -f makefile.vc clean
+
+cd ..\..\
+%compile% IMG*.c
+lib.exe /OUT:"SDL2_image.lib" /NOLOGO *.obj
+move SDL2_image.lib ..\..\dist\lib\x86\
+del *.obj
+
+:: SDL_ttf ::
+cd %~dp0SDL2_ttf-2.0.15
+set cmpl=%compile% /D"_UNICODE" /D"UNICODE" /D"NDEBUG" /D"_LIB" /D"FT2_BUILD_LIBRARY"
+%cmpl% external\freetype-2.9.1\src\autofit\autofit.c
+%cmpl% external\freetype-2.9.1\src\bdf\bdf.c
+%cmpl% external\freetype-2.9.1\src\cff\cff.c
+%cmpl% external\freetype-2.9.1\src\base\ftbase.c
+%cmpl% external\freetype-2.9.1\src\base\ftbitmap.c
+%cmpl% external\freetype-2.9.1\src\base\ftfstype.c
+%cmpl% external\freetype-2.9.1\src\base\ftgasp.c
+%cmpl% external\freetype-2.9.1\src\cache\ftcache.c
+%cmpl% external\freetype-2.9.1\src\base\ftglyph.c
+%cmpl% external\freetype-2.9.1\src\gzip\ftgzip.c
+%cmpl% external\freetype-2.9.1\src\base\ftinit.c
+%cmpl% external\freetype-2.9.1\src\lzw\ftlzw.c
+%cmpl% external\freetype-2.9.1\src\base\ftstroke.c
+%cmpl% external\freetype-2.9.1\src\base\ftsystem.c
+%cmpl% external\freetype-2.9.1\src\smooth\smooth.c
+%cmpl% external\freetype-2.9.1\src\base\ftbbox.c
+%cmpl% external\freetype-2.9.1\src\base\ftbdf.c
+%cmpl% external\freetype-2.9.1\src\base\ftcid.c
+%cmpl% external\freetype-2.9.1\src\base\ftmm.c
+%cmpl% external\freetype-2.9.1\src\base\ftpfr.c
+%cmpl% external\freetype-2.9.1\src\base\ftsynth.c
+%cmpl% external\freetype-2.9.1\src\base\fttype1.c
+%cmpl% external\freetype-2.9.1\src\base\ftwinfnt.c
+%cmpl% external\freetype-2.9.1\src\base\ftgxval.c
+%cmpl% external\freetype-2.9.1\src\base\ftotval.c
+%cmpl% external\freetype-2.9.1\src\base\ftpatent.c
+%cmpl% external\freetype-2.9.1\src\pcf\pcf.c
+%cmpl% external\freetype-2.9.1\src\pfr\pfr.c
+%cmpl% external\freetype-2.9.1\src\psaux\psaux.c
+%cmpl% external\freetype-2.9.1\src\pshinter\pshinter.c
+%cmpl% external\freetype-2.9.1\src\psnames\psmodule.c
+%cmpl% external\freetype-2.9.1\src\raster\raster.c
+%cmpl% external\freetype-2.9.1\src\sfnt\sfnt.c
+%cmpl% external\freetype-2.9.1\src\truetype\truetype.c
+%cmpl% external\freetype-2.9.1\src\type1\type1.c
+%cmpl% external\freetype-2.9.1\src\cid\type1cid.c
+%cmpl% external\freetype-2.9.1\src\type42\type42.c
+%cmpl% external\freetype-2.9.1\src\winfonts\winfnt.c
+%cmpl% SDL_ttf.c
+lib.exe /OUT:"SDL2_ttf.lib" /NOLOGO *.obj
+move SDL2_ttf.lib ..\..\dist\lib\x86\
+del *.obj
