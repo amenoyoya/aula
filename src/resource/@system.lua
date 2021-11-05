@@ -1,5 +1,7 @@
 ﻿--- extended teal ---
 
+teal = require"@teal"
+
 -- teal configuration
 -- * change this table if you want to change teal behavior
 teal.config = {
