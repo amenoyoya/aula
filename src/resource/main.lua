@@ -192,11 +192,9 @@ doMainScript(dir .. "main.sym")
 doMainScript(dir .. "main.tl")
 
 -- case: argv[1] is "*.lua" or "*.sym" or "*.tl" script file
-        if ext == ".lns" then
-            lune.dofile(scriptFile)
-        else
-            dofile(scriptFile)
-        end
+if os.argv[1] then
+    local scriptFile = Aula.Path.complete(os.argv[1])
+    local ext = Aula.Path.getExtension(scriptFile)
     if (ext == ".lua" or ext == ".sym" or ext == ".tl") and Aula.Path.isFile(scriptFile) then
         dofile(scriptFile)
         os.exit(0)

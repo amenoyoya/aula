@@ -1,3 +1,0 @@
-﻿pub class Hoge {
-    pri let val: int {pub};
-}
