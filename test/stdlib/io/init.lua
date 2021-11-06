@@ -66,38 +66,39 @@ assert(file:open(package.__dir .. "/iosample/sample_copied.txt", "r"))
 file:close()
 print "✅ OK: Aula.IO.copyFile"
 
-assert(IO.copyDirectory(package.__dir .. "/iosample", package.__dir .. "/iosample/copied_directory"))
+assert(IO.copyDirectory(package.__dir .. "/iosample", package.__dir .. "/iosample_copied"))
+assert(IO.moveDirectory(package.__dir .. "/iosample_copied", package.__dir .. "/iosample/copied_directory"))
 
-local files = {
-    "copied_directory",
-    "copied_directory/sample.txt",
-    "copied_directory/sample_copied.txt",
-    "sample.txt",
-    "sample_copied.txt"
-}
+local file_count, dir_count = 0, 0
 local dirlen = (package.__dir .. '/iosample/'):u8len()
 
-print "✅ Check: Aula.IO.enumerateFiles (nested)"
 for i, file in ipairs(IO.enumerateFiles(package.__dir .. "/iosample")) do
-    file = file.path:u8sub(dirlen + 1):replace('\\', '/')
-    print("\t" .. file)
-    assert(file == files[i])
+    print("\t" .. file.path:u8sub(dirlen + 1):replace('\\', '/'))
+    if file.isFile then file_count = file_count + 1 end
+    if file.isDirectory then dir_count = dir_count + 1 end
 end
+assert(file_count == 4)
+assert(dir_count == 1)
+print "✅ Check: Aula.IO.enumerateFiles (nested)"
 
-print "✅ Check: Aula.IO.enumerateFiles (file only)"
+file_count, dir_count = 0, 0
 for i, file in ipairs(IO.enumerateFiles(package.__dir .. "/iosample", -1, Aula.IO.EnumFileOption.FILE)) do
-    file = file.path:u8sub(dirlen + 1):replace('\\', '/')
-    print("\t" .. file)
-    assert(file == files[i + 1])
+    print("\t" .. file.path:u8sub(dirlen + 1):replace('\\', '/'))
+    if file.isFile then file_count = file_count + 1 end
+    if file.isDirectory then dir_count = dir_count + 1 end
 end
+assert(file_count == 4)
+assert(dir_count == 0)
+print "✅ Check: Aula.IO.enumerateFiles (file only)"
 
-table.remove(files, 3)
-table.remove(files, 2)
-print "✅ Check: Aula.IO.enumerateFiles (not nested)"
+file_count, dir_count = 0, 0
 for i, file in ipairs(IO.enumerateFiles(package.__dir .. "/iosample", 1)) do
-    file = file.path:u8sub(dirlen + 1):replace('\\', '/')
-    print("\t" .. file)
-    assert(file == files[i])
+    print("\t" .. file.path:u8sub(dirlen + 1):replace('\\', '/'))
+    if file.isFile then file_count = file_count + 1 end
+    if file.isDirectory then dir_count = dir_count + 1 end
 end
+assert(file_count == 2)
+assert(dir_count == 1)
+print "✅ Check: Aula.IO.enumerateFiles (not nested)"
 
 require "./zip" -- require {__dir}/zip.lua

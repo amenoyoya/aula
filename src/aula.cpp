@@ -1,14 +1,6 @@
 ﻿#include <aula/lua.hpp>
-#include <aula/sdl.hpp>
 
 __main() {
-    /// SDL 初期化・終了準備
-    atexit(Aula::SDL::quit);
-    if (!Aula::SDL::initialize()) {
-        Aula::IO::Stderr->write(Aula::SDL::getLastError());
-        return 1;
-    }
-
     /// Aula Lua Engine 準備
     sol::state lua;
     std::string errorMessage;
