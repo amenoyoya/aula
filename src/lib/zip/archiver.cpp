@@ -261,7 +261,7 @@ namespace Aula {
             dest->entries = info.number_entry;
             dest->commentSize = info.size_comment;
             dest->comment.resize(info.size_comment);
-            if (UNZ_OK == unzGetGlobalComment((unzFile)unz, (char*)dest->comment.c_str(), info.size_comment)) return nullptr;
+            if (UNZ_OK != unzGetGlobalComment((unzFile)unz, (char*)dest->comment.c_str(), info.size_comment)) return nullptr;
             return std::move(dest);
         }
         
