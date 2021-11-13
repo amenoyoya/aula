@@ -75,24 +75,6 @@ Aula will be executed as interactive-mode if there are no commands and script fi
 
 ***
 
-## Development in Windows 10
-
-Make sure `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat` has been installed by Microsoft Visual C++ 2019 Community Edition.
-
-Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
-
-### Build external libraries
-```powershell
-# Build LuaJIT
-> .\extlib\build_luajit.bat
-
-# Build zlib
-> .\extlib\build_zlib.bat
-```
-
-
-***
-
 ## Development
 
 Read [Development.md](./Development.md)
