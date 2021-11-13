@@ -1,117 +1,112 @@
 ﻿#pragma once
 
-#include <aula/core/io/filesystem.hpp>
+#include "../core.hpp"
 
-namespace Aula {
-    namespace Zip {
-        /// zipグローバル情報
-        struct GlobalInformation {
-            u32 entries,     // エントリー数
-                commentSize; // グローバルコメントのバイト数
-            std::string comment;  // グローバルコメント
-        };
+extern "C" {
+    /// zip archiver structure
+    typedef struct {
+        unsigned long  handler;
+        unsigned short level; // compression level
+    } zip_archiver_t;
 
-        /// 日付・時間
-        struct DateTime {
-            u32 sec, min, hour, day, month, year;
-        };
-        
-        /// zip書庫内ファイル情報
-        struct FileInformation {
-            u32 version, // 作成されたバージョン
-                neededVersion, // 解凍に必要なバージョン
-                flag, // ビットフラグ
-                compressionMethod, // 圧縮メソッド
-                dosDate, // ファイル更新日(DOS)
-                crc, // crc32
-                compressedSize, // 圧縮時のサイズ
-                uncompressedSize, // 解凍時のサイズ
-                fileNameSize, // ファイル名のバイト数
-                fileExtraSize, // エキストラフィールドのバイト数
-                fileCommentSize, // コメントのバイト数
-                diskNumStart, // disk num のスタート位置
-                internalFA, // 内部ファイル属性
-                externalFA; // 外部ファイル属性
-            DateTime date; // ファイル作成日時
-            std::string fileName, comment; // ファイル名，コメント
-            IO::Binary  uncompressedData; // 解凍時のデータ内容
-        };
-        
-        /// zipファイル管理クラス
-        class Archiver: public Object {
-        public:
-            Archiver(): Object(), zip(0), unz(0), zipSize(0), compressLevel(6) {}
-            explicit Archiver(const std::string &filename, const std::string &type = "w", const std::string &password = "")
-                : Object(), zip(0), unz(0), zipSize(0), compressLevel(6)
-            {
-                open(filename, type, password);
-            }
-            ~Archiver(){
-                close();
-            }
+    /// zip extractor structure
+    typedef struct {
+        unsigned long handler;
+        size_t size; // total zip file size
+    } unz_archiver_t;
 
-            /// zipファイルオープン
-            // @param type: 作成タイプ
-            //         "w": 新規作成、 "w+":（ファイルに）埋め込み、 "a":（zipに）追加
-            //         "r": 作成(埋め込み)したzipアーカイブを読み込む
-            //      新規作成の場合，親ディレクトリも自動的につくる
-            bool open(const std::string &filename, const std::string &type = "w", const std::string &password = "");
+    /// date time structure
+    typedef struct {
+        unsigned long sec, min, hour, day, month, year;
+    } datetime_t;
 
-            /// zipファイルクローズ
-            // close時に作成したzipファイルにコメントを付加できる
-            bool close(const std::string &comment = "");
+    /// file information in zip structure
+    typedef struct {
+        unsigned long   version, // created version
+                        needed_version, // needed version for uncompression
+                        flag, // bit flag
+                        compression_method, // compression method
+                        dos_date, // modified time (DOS)
+                        crc32, // crc32
+                        compressed_size, // compressed size
+                        uncompressed_size, // uncompressed size
+                        filename_size, // file name length
+                        extra_size, // extra fields size
+                        comment_size, // comment length
+                        disknum_start, // start position of disk num
+                        internal_attr, // internal file attribution
+                        external_attr; // external file attribution
+        datetime_t      created_at; // created date time
+    } unz_file_info_t;
 
-            /*** アウトプットモード用関数 ***/
-            /// 圧縮レベル現在値取得
-            const u8 &getCompressLevel() const { return compressLevel; }
-            
-            /// 圧縮レベル変更: 0-9
-            Archiver &setCompressLevel(u8 level) {
-                compressLevel = level;
-                return *this;
-            }
+    /// local file position in the zip file
+    typedef struct {
+        unsigned long   pos_in_zip,  // offset in zip file directory
+                        num_of_file; // of file
+    } unz_file_pos_t;
 
-            /// zipファイルにデータをファイルとして追加
-            bool append(const IO::Binary &data, const std::string &destFileName, u32 datasize = u32(-1), const std::string &comment = "");
-            
-            /// ファイルを追加
-            bool appendFile(const std::string &srcFileName, const std::string &destFileName, const std::string &comment = "");
+    /// open zip file (archiver)
+    // @param mode:
+    //         "w": create new file.
+    //         "w+": embed zip data to the file
+    //         "a": append data to the zip file
+    //        * parent directories will be created automatically
+    // @param compresslevel: 0 - 9
+    __export zip_archiver_t *zip_open(const char *filename, const char *mode, unsigned short compresslevel);
+
+    /// close zip archiver
+    // @param comment: zip global comment can be appended if you want
+    __export void zip_close(zip_archiver_t *self, const char *comment);
+
+    /// append data as a file into zip file
+    __export bool zip_append(zip_archiver_t *self, const char *data, size_t datasize, const char *dest_filename, const char *password, const char *comment);
+    
+    /// append file into zip file
+    __export bool zip_append_file(zip_archiver_t *self, const char *src_filename, const char *dest_filename, const char *password, const char *comment);
 
 
-            /*** インプットモード用関数 ***/
-            /// グローバル情報取得
-            std::unique_ptr<GlobalInformation> getGlobalInformation() const;
+    /// open zip file (extractor)
+    __export unz_archiver_t *unz_open(const char *filename);
 
-            /// zip全体のサイズ
-            const u32 &getSize() const { return zipSize; }
-            
-            /// 書庫内ファイルの最初の位置へ移動
-            bool toFirstFile();
+    /// close zip extractor
+    __export void unz_close(unz_archiver_t *self);
 
-            /// 書庫内の次のファイルへ移動
-            bool toNextFile();
+    /// get global comment of the zip file
+    __export const char *unz_comment(unz_archiver_t *self);
+    
+    /// locate first entry file in the zip file
+    __export bool unz_locate_first(unz_archiver_t *self);
 
-            /// 指定ファイル名の書庫内ファイル位置に移動
-            bool locateFile(std::string filename);
+    /// locate next entry file in the zip file
+    __export bool unz_locate_next(unz_archiver_t *self);
 
-            /// 書庫内の現在位置のファイル情報取得
-            // @param getContent(default: false): 解凍後のファイルデータを取得する場合は true
-            std::unique_ptr<FileInformation> getCurrentFileInformation(bool getContent = false) const;
+    /// locate specified name of file in the zip file
+    __export bool unz_locate_name(unz_archiver_t *self, const char *name);
 
-            /// 書庫内の現在位置取得
-            u32 getCurrentOffset() const;
-            
-            /// 状態取得
-            // 書庫内ファイルの読み込みが完了した場合FINISHEDを返す
-            virtual u8 getState();
-        private:
-            u32         zip, unz; // 圧縮・解凍ハンドル
-            u32         zipSize; // zipファイル全体のサイズ
-            u8          compressLevel; // 圧縮レベル (append時使用)
-            std::string compressPassword; // 圧縮・解凍用パスワード
+    /// get current file information in the zip data
+    __export bool unz_info(unz_archiver_t *self, unz_file_info_t *dest, char *filename, size_t filename_size, char *comment, size_t comment_size);
 
-            /// 書庫内の現在位置の解凍後ファイルデータ取得
-            bool readCurrentFileData(IO::Binary *dest, u32 size) const;
-        };
-    }
+    /// get current file content (uncompressed) in the zip file
+    __export bool unz_content(unz_archiver_t *self, char *dest, size_t datasize, const char *password);
+
+    /// get current file position in the zip data
+    __export bool unz_pos(unz_archiver_t *self, unz_file_pos_t *dest);
+
+    /// locate to the designated position
+    __export bool unz_locate(unz_archiver_t *self, unz_file_pos_t *pos);
+
+    /// get the zip file offset (if the data is embedded zip data, return larger than 0)
+    __export size_t unz_offset(unz_archiver_t *self);
+
+
+    /*** utility functions ***/
+
+    /// remove embedded zip data from the file
+    __export bool unz_rmdata(const char *filename);
+
+    /// Compress the directory to zip
+    __export bool zip_compress(const char *dir, const char *output, unsigned short level, const char *password, const char *mode, const char *root);
+
+    /// uncompress the zip into directory
+    __export bool unz_uncompress(const char *zip, const char *dir, const char *password);
 }

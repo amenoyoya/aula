@@ -1,26 +1,27 @@
 ﻿#pragma once
 
+#define UNICODE
 #define SOL_ALL_SAFETIES_ON 1
 #define SOL_LUAJIT 1
 #include <sol/sol.hpp>
-#include <aula/core.hpp>
-#include <aula/zip.hpp>
+#include "core.hpp"
 
-// ライブラリリンク
-#ifdef _MSC_VER
-    #pragma comment(lib, "libaula_lua.lib")
+#ifdef _WINDOWS
     #pragma comment(lib, "lua51.lib")
 #endif
 
-namespace Aula {
-    namespace Lua {
-        /// Register Aula Library
-        //  - Aula C++ core library
-        //  - Aula C++ zip library
-        //  - Lua standard library extended
-        bool registerLibrary(sol::state &lua, std::string *errorMessage);
 
-        /// Execute interactive lua
-        void dotty(sol::state &lua, const std::string &progname = "aula");
-    }
-}
+/// Register Libraries
+//  - Extended Lua standard libraries
+//  - Luz core library
+bool lua_registlib(sol::state &lua, std::string *errorMessage);
+
+/// Execute interactive lua
+void lua_dotty(sol::state &lua, const std::string &progname = "luz");
+
+
+/*** include source files macro ***/
+#ifdef _USE_LUZ_LUA
+    #include "lua/registlib.cpp"
+    #include "lua/dotty.cpp"
+#endif

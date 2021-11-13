@@ -1,42 +1,55 @@
 ﻿#pragma once
 
-// ライブラリリンク
-#ifdef _MSC_VER
+#include "core/os.hpp"
+#include "core/filesystem.hpp"
+
+#ifdef _WINDOWS
     #pragma warning(disable:4005)
+    #pragma comment(linker, "/nodefaultlib:libcmt")
+    
     #pragma comment(lib, "user32.lib")
     #pragma comment(lib, "shell32.lib")
     #pragma comment(lib, "shlwapi.lib")
     #pragma comment(lib, "winmm.lib")
-    #pragma comment(lib, "libaula_core.lib")
 #endif
 
-#include "core/io/filesystem.hpp"
-#include "core/system/base.hpp"
-
-/*** アプリケーションMain関数マクロ ***/
+/*** main function macro ***/
 #ifdef _WINDOWS
     #define __main() \
-    int Aula_main(int, wchar_t**);\
-    int wmain(int argc, wchar_t **argv){\
-        Aula::Encoding::initialize();\
-        return Aula_main(argc, argv);\
+    int luz_main(std::vector<std::string> &args);\
+    int wmain(int argc, wchar_t **argv) {\
+        initlocale();\
+        std::vector<std::string> args = os_cmdline(argv, argc);\
+        return luz_main(args);\
     }\
-    int Aula_main(int argc, wchar_t **argv)
-    
-    
-    #define __WinMain() \
-    int Aula_main(HINSTANCE, HINSTANCE, LPWSTR , int);\
-    int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdLine){\
-        Aula::Encoding::initialize();\
-        return Aula_main(hInstance, hPrevInstance, lpCmdLine, nCmdLine);\
-    }\
-    int Aula_main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdLine)
+    int luz_main(std::vector<std::string> &args)
 #else
     #define __main() \
-    int Aula_main(int, char**);\
-    int main(int argc, char **argv){\
-        Aula::Encoding::initialize();\
-        return Aula_main(argc, argv);\
+    int luz_main(std::vector<std::string> &args);\
+    int main(int argc, char **argv) {\
+        initlocale();\
+        std::vector<std::string> args = os_cmdline(argv, argc);\
+        return luz_main(args);\
     }\
-    int Aula_main(int argc, char **argv)
+    int luz_main(std::vector<std::string> &args)
+#endif
+
+/*** utility macro ***/
+#ifdef _WINDOWS
+    #define _U8(str) wcstou8(L##str)
+    #define _S(str) L##str
+#else
+    #define _U8(str) std::string(str)
+    #define _S(str) str
+#endif
+
+#define _fputs(fp, str) fputws((u8towcs(str) + L"\n").c_str(), fp)
+#define _fprintf(fp, format, ...) fwprintf(fp, u8towcs(format).c_str(), __VA_ARGS__)
+
+/*** include source files macro ***/
+#ifdef _USE_LUZ_CORE
+    #include "core/string.cpp"
+    #include "core/path.cpp"
+    #include "core/os.cpp"
+    #include "core/filesystem.cpp"
 #endif

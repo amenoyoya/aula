@@ -1,9 +1,12 @@
 ﻿#pragma once
 
-// ライブラリリンク
-#ifdef _MSC_VER
-    #pragma comment(lib, "libaula_zip.lib")
+#include "zip/archiver.hpp"
+
+#ifdef _WINDOWS
     #pragma comment(lib, "zlib.lib")
 #endif
 
-#include "zip/base.hpp"
+/*** include source files macro ***/
+#ifdef _USE_LUZ_ZIP
+    #include "zip/archiver.cpp"
+#endif
