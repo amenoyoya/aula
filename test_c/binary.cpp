@@ -3,7 +3,7 @@
 
 inline bool writefile(const std::string &filename, aula::io::binary_t *binary) {
     FILE *fp = fopen(filename.c_str(), "wb");
-    bool result = 0 < fwrite(aula::io::binary_ptr(binary), 1, binary->tail - binary->head, fp);
+    bool result = 0 < fwrite(aula::io::binary_tostr(binary), 1, binary->tail - binary->head, fp);
     fclose(fp);
     return result;
 }
@@ -13,16 +13,16 @@ inline std::unique_ptr<aula::io::binary_t> readfile(const std::string &filename)
     fseek(fp, 0, aula::io::seekfrom::tail);
     
     size_t size = ftell(fp);
-    auto bin = aula::io::binary_new(nullptr, size);
+    auto bin = aula::io::binary_new(0, size);
 
     fseek(fp, 0, aula::io::seekfrom::head);
-    fread((void*)binary_ptr(bin.get()), 1, size, fp);
+    fread((void*)binary_addr(bin.get()), 1, size, fp);
     fclose(fp);
     return std::move(bin);
 }
 
 int main() {
-    auto bin = aula::io::binary_new(nullptr, 0); // create empty binary
+    auto bin = aula::io::binary_new(0, 0); // create empty binary
 
     aula::io::binary_pushrune(bin.get(), "Hello, world");
     aula::io::binary_pushint(bin.get(), 123);

@@ -7,267 +7,228 @@
     #include <dirent.h>
 #endif
 
-extern "C" {
-    __export FILE *fs_fopen(const char *filename, const char *mode) {
-        if (*mode == 'w') fs_mkdir(path_parentdir(filename).c_str()); // auto create parent directories
-        #ifdef _WINDOWS
-            return _wfopen(u8towcs(filename).c_str(), u8towcs(mode).c_str());
-        #else
-            return fopen(filename, mode);
-        #endif
-    }
-
-    __export void fs_fclose(FILE *fp) {
-        if (fp) {
-            fclose(fp);
-            fp = nullptr;
+namespace aula {
+    namespace fs {
+        bool copyfile(const std::string &src, const std::string &dest, bool isOverwrite) {
+            if (!isOverwrite && path::isfile(dest)) return false;
+            
+            auto in = file_open(src, "rb"), out = file_open(dest, "wb");
+            if (!in || !out) return false;
+            
+            size_t filesize = file_size(in.get());
+            auto content = file_read(in.get(), filesize);
+            if (io::binary_size(content.get()) != filesize) return false;
+            return filesize == file_write(out.get(), content.get());
         }
-    }
 
-    __export FILE *fs_popen(const char *procname, const char *mode) {
-        #ifdef _WINDOWS
-            return _wpopen(u8towcs(procname).c_str(), u8towcs(mode).c_str());
-        #else
-            return fopen(procname, mode);
-        #endif
-    }
-
-    __export void fs_pclose(FILE *fp) {
-        if (fp) {
+        bool rmfile(const std::string &filename) {
             #ifdef _WINDOWS
-                _pclose(fp);
+                return FALSE != DeleteFileW(std::move(string::u8towcs(filename)).c_str());
             #else
-                pclose(fp);
+                return 0 == unlink(filename.c_str());
             #endif
-            fp = nullptr;
         }
-    }
 
-    __export bool fs_copyfile(const char *src, const char *dest, bool isOverwrite) {
-        if (!isOverwrite && path_isfile(dest)) return false;
+        #ifdef _WINDOWS
+            bool mkdir(const std::string &dir) {
+                std::wstring wdir = std::move(string::u8towcs(dir));
+                wchar_t *p = (wchar_t*)wdir.c_str();
+                unsigned long i = 0;
+                // create directories in order from the upper level directory
+                while (*p != '\0') {
+                    if ((*p == '/' || *p == '\\') && i > 0) {
+                        std::wstring name = wdir.substr(0, i);
+                        if (!PathIsDirectory(name.c_str()) && !CreateDirectory(name.c_str(), nullptr)) return false;
+                    }
+                    ++p;
+                    ++i;
+                }
+                if (!PathIsDirectory(wdir.c_str()) && !CreateDirectory(wdir.c_str(), nullptr)) return false;
+                return true;
+            }
+        #else
+            bool mkdir(const std::string &dir) {
+                char *p = (char*)dir.c_str();
+                unsigned long i = 0;
+                // create directories in order from the upper level directory
+                while (*p != '\0') {
+                    if ((*p == '/') && i > 0) {
+                        std::string name = dir.substr(0, i);
+                        if (!path::isdir(name) && 0 != ::mkdir(name.c_str(), S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)) return false;
+                    }
+                    ++p;
+                    ++i;
+                }
+                if (!path::isdir(dir) && 0 != ::mkdir(dir.c_str(), S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)) return false;
+                return true;
+            }
+        #endif
         
-        FILE *in = fs_fopen(src, "rb"), *out = fs_fopen(dest, "wb");
-        if (!in || !out) {
-            if (in) fclose(in);
-            if (out) fclose(out);
+        bool copydir(const std::string &src, const std::string &dest) {
+            auto dirent = dir_open(src);
+            if (!dirent) return false;
+            if (!path::isdir(dest) && !mkdir(dest)) return false;
+
+            std::string dir = std::move(path::append_slash(dest));
+            do {
+                if (dirent->current_name == "." || dirent->current_name == "..") continue;
+
+                if (dirent->current_isdir) {
+                    // copy directory recursively
+                    if (!copydir(dirent->current_path, dir + dirent->current_name)) return false;
+                } else if (dirent->current_isfile) {
+                    // copy file
+                    if (!copyfile(dirent->current_path, dir + dirent->current_name)) return false;
+                }
+            } while (dir_next(dirent.get()));
+            return true;
+        }
+        
+        /// @private remove empty directory
+        inline bool rmdir_empty(const std::string &dir) {
+            #ifdef _WINDOWS
+                return FALSE != RemoveDirectory(std::move(string::u8towcs(dir)).c_str());
+            #else
+                return 0 == ::rmdir(dir.c_str());
+            #endif
+        }
+        
+        bool rmdir(const std::string &dir) {
+            auto dirent = dir_open(dir);
+            if (!dirent) return false;
+
+            do {
+                if (dirent->current_name == "." || dirent->current_name == "..") continue;
+                
+                if (dirent->current_isdir) {
+                    // remove directory recursively
+                    if (!rmdir(dirent->current_path)) return false;
+                } else if (dirent->current_isfile) {
+                    // remove file
+                    if (!rmfile(dirent->current_path)) return false;
+                }
+            } while (dir_next(dirent.get()));
+            return rmdir_empty(dir); // remove empty directory
+        }
+
+        /// @private rename file|directory
+        inline bool rename_base(const std::string &src, const std::string &dest) {
+            return 0 ==
+                #ifdef _WINDOWS
+                    _wrename(std::move(string::u8towcs(src)).c_str(), std::move(string::u8towcs(dest)).c_str());
+                #else
+                    rename(src.c_str(), dest.c_str());
+                #endif
+        }
+
+        bool rename(const std::string &src, const std::string &dest, bool isOverwrite) {
+            bool isdir = path::isdir(dest), isfile = path::isfile(dest);
+            if (!isdir && !isfile) return rename_base(src, dest);
+            if (isOverwrite) {
+                if (isdir) return rmdir(dest) && rename_base(src, dest);
+                if (isfile) return rmfile(dest) && rename_base(src, dest);
+            }
             return false;
         }
-        
-        bool result = true;
-        for (int c = fgetc(in); !feof(in); c = fgetc(in)) {
-            if (EOF == fputc(c, out)) {
-                result = false;
-                break;
-            }
-        }
-        if (in) fclose(in);
-        if (out) fclose(out);    
-        return true;
-    }
 
-    __export bool fs_rmfile(const char *filename) {
+        /*** ================================================== ***/
+        /*** file manager ***/
+        std::string file_readline(FILE *self) {
+            std::string line;
+            line.reserve(256);
+            for (int c = file_readchar(self); c != EOF; c = file_readchar(self)) {
+                // break loop if crlf found
+                if (c == '\r') {
+                    file_seek(self, 1, io::seekfrom::cur); // skip next \n
+                    break;
+                } else if (c == '\n') {
+                    break;
+                }
+                line.push_back((char)c);
+            }
+            return std::move(line);
+        }
+
+        /*** ================================================== ***/
+        /*** file enumerator ***/
         #ifdef _WINDOWS
-            return FALSE != DeleteFileW(u8towcs(filename).c_str());
+            /// @private custom deleter for dirent_ptr
+            static void dir_deleter(dirent_t *self) {
+                if (self == nullptr) return;
+                if (self->handler) {
+                    FindClose((HANDLE)self->handler);
+                    self->handler = 0;
+                }
+                delete self;
+                self = nullptr;
+            }
+
+            dirent_ptr dir_open(const std::string &_dir) {
+                if (!path::isdir(_dir)) return nullptr; // not directory
+
+                WIN32_FIND_DATA info;
+                std::string dir = std::move(path::append_slash(_dir));
+                unsigned long handler = (unsigned long)FindFirstFile((std::move(string::u8towcs(dir)) + L"*.*").c_str(), &info);
+
+                if (handler == 0) return nullptr;
+                std::string name = std::move(string::wcstou8(info.cFileName));
+                std::string path = std::move(dir + name);
+                bool isfile = path::isfile(path), isdir = path::isdir(path);
+                return dirent_ptr(new dirent_t {
+                    handler, std::move(dir), std::move(name), std::move(path), isfile, isdir
+                }, dir_deleter);
+            }
+            
+            bool dir_next(dirent_t *self) {
+                WIN32_FIND_DATA info;
+                if (!FindNextFile((HANDLE)self->handler, &info)) return false;
+                self->current_name = std::move(string::wcstou8(info.cFileName));
+                self->current_path = self->dir + self->current_name;
+                self->current_isfile = path::isfile(self->current_path);
+                self->current_isdir = path::isdir(self->current_path);
+                return true;
+            }
         #else
-            return 0 == unlink(filename);
+            /// @private custom deleter for dirent_ptr
+            static void dir_deleter(dirent_t *self) {
+                if (self == nullptr) return;
+                if (self->handler) {
+                    closedir((DIR*)self->handler);
+                    self->handler = 0;
+                }
+                delete self;
+                self = nullptr;
+            }
+
+            dirent_ptr dir_open(const std::string &_dir) {
+                if (!path::isdir(_dir)) return nullptr; // not directory
+
+                std::string dir = std::move(path::append_slash(_dir));
+                unsigned long handler = (unsigned long)opendir(dir.c_str());
+
+                if (0 == handler) return nullptr;
+
+                struct dirent* dent = readdir((DIR*)handler);
+                if (!dent) {
+                    closedir((DIR*)handler);
+                    return nullptr;
+                }
+                std::string name = dent->d_name, path = std::move(dir + name);
+                bool isfile = path::isfile(path), isdir = path::isdir(path);
+                return dirent_ptr(new dirent_t {
+                    handler, std::move(dir), std::move(name), std::move(path), isfile, isdir
+                }, dir_deleter);
+            }
+
+            bool dir_next(dirent_t *self) {
+                struct dirent* dent = readdir((DIR*)self->handler);
+                if (!dent) return false;
+                self->current_name = dent->d_name;
+                self->current_path = self->dir + self->current_name;
+                self->current_isfile = path::isfile(self->current_path);
+                self->current_isdir = path::isdir(self->current_path);
+                return true;
+            }
         #endif
-    }
-
-    #ifdef _WINDOWS
-        __export bool fs_mkdir(const char *dir) {
-            std::wstring wdir = u8towcs(dir);
-            wchar_t *p = (wchar_t*)wdir.c_str();
-            unsigned long i = 0;
-            // create directories in order from the upper level directory
-            while (*p != '\0') {
-                if ((*p == '/' || *p == '\\') && i > 0) {
-                    std::wstring name = wdir.substr(0, i);
-                    if (!PathIsDirectory(name.c_str()) && !CreateDirectory(name.c_str(), nullptr)) return false;
-                }
-                ++p;
-                ++i;
-            }
-            if (!PathIsDirectory(wdir.c_str()) && !CreateDirectory(wdir.c_str(), nullptr)) return false;
-            return true;
-        }
-    #else
-        __export bool fs_mkdir(const char *_dir) {
-            std::string dir = _dir;
-            char *p = (char*)dir.c_str();
-            unsigned long i = 0;
-            // create directories in order from the upper level directory
-            while (*p != '\0') {
-                if ((*p == '/') && i > 0) {
-                    std::string name = dir.substr(0, i);
-                    if (!path_isdir(name.c_str()) && 0 != mkdir(name.c_str(), S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)) return false;
-                }
-                ++p;
-                ++i;
-            }
-            if (!path_isdir(dir.c_str()) && 0 != mkdir(dir.c_str(), S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)) return false;
-            return true;
-        }
-    #endif
-    
-    __export bool fs_copydir(const char *src, const char *dest) {
-        fs_dirent_t *dirent = fs_opendir(src);
-        if (dirent == nullptr) return false;
-        if (!path_isdir(dest) && !fs_mkdir(dest)){
-            fs_closedir(dirent);
-            return false;
-        }
-
-        std::string dir = path_append_slash(dest);
-        do {
-            if (dirent->current_name != "." && dirent->current_name != "..") {
-                if (path_isdir(dirent->current_path)) { // copy directory recursively
-                    if (!fs_copydir(dirent->current_path.c_str(), (dir + dirent->current_name).c_str())){
-                        fs_closedir(dirent);
-                        return false;
-                    }
-                } else { // copy file
-                    if (!fs_copyfile(dirent->current_path.c_str(), (dir + dirent->current_name).c_str(), true)) {
-                        fs_closedir(dirent);
-                        return false;
-                    }
-                }
-            }
-        } while (fs_seekdir(dirent));
-
-        fs_closedir(dirent);
-        return true;
-    }
-    
-    /// @private remove empty directory
-    inline bool rmdir_empty(const char *dir) {
-        #ifdef _WINDOWS
-            return FALSE != RemoveDirectory(u8towcs(dir).c_str());
-        #else
-            return 0 == rmdir(dir);
-        #endif
-    }
-    
-    __export bool fs_rmdir(const char *dir) {
-        fs_dirent_t *dirent = fs_opendir(dir);
-        if (dirent == nullptr) return false;
-
-        do {
-            if (dirent->current_name != "." && dirent->current_name != "..") {
-                if (path_isdir(dirent->current_path)) { // remove directory recursively
-                    if (!fs_rmdir(dirent->current_path.c_str())) {
-                        fs_closedir(dirent);
-                        return false;
-                    }
-                } else { // remove file
-                    if (!fs_rmfile(dirent->current_path.c_str())) {
-                        fs_closedir(dirent);
-                        return false;
-                    }
-                }
-            }
-        } while (fs_seekdir(dirent));
-
-        fs_closedir(dirent);
-        return rmdir_empty(dir); // remove empty directory
-    }
-
-    /// @private rename file / directory
-    inline bool fs_rename_base(const char *src, const char *dest) {
-        return 0 ==
-            #ifdef _WINDOWS
-                _wrename(u8towcs(src).c_str(), u8towcs(dest).c_str());
-            #else
-                rename(src, dest);
-            #endif
-    }
-
-    __export bool fs_rename(const char *src, const char *dest, bool isOverwrite) {
-        bool isdir = path_isdir(dest), isfile = path_isfile(dest);
-        if (!isdir && !isfile) return fs_rename_base(src, dest);
-        if (isOverwrite) {
-            if (isdir) return fs_rmdir(dest) && fs_rename_base(src, dest);
-            if (isfile) return fs_rmfile(dest) && fs_rename_base(src, dest);
-        }
-        return false;
-    }
-
-    /*** ================================================== ***/
-    /*** file enumerator ***/
-    #ifdef _WINDOWS
-        __export fs_dirent_t *fs_opendir(const char *_dir) {
-            WIN32_FIND_DATA info;
-            std::string dir = path_append_slash(_dir);
-            unsigned long handler = (unsigned long)FindFirstFile((u8towcs(dir) + L"*.*").c_str(), &info);
-
-            if (0 == handler) return nullptr;
-            
-            std::string name = wcstou8(info.cFileName);
-            return new fs_dirent_t {
-                handler, dir, name, dir + name
-            };
-        }
-        
-        __export void fs_closedir(fs_dirent_t *self) {
-            if (self == nullptr) return;
-            if (self->handler) {
-                FindClose((HANDLE)self->handler);
-            }
-            delete self;
-            self = nullptr;
-        }
-        
-        __export bool fs_seekdir(fs_dirent_t *self) {
-            WIN32_FIND_DATA info;
-            
-            if (!self->handler) return false;
-            if (!FindNextFile((HANDLE)self->handler, &info)) return false;
-            self->current_name = wcstou8(info.cFileName);
-            self->current_path = self->directory + self->current_name;
-            return true;
-        }
-    #else
-        __export fs_dirent_t *fs_opendir(const char *_dir) {
-            std::string dir = path_append_slash(_dir);
-            unsigned long handler = (unsigned long)opendir(dir.c_str());
-            
-            if (0 == handler) return nullptr;
-            
-            struct dirent* dent = readdir((DIR*)handler);
-            
-            if (!dent) {
-                closedir((DIR*)handler);
-                return nullptr;
-            }
-            return new fs_dirent_t {
-                handler, dir, dent->d_name, dir + dent->d_name
-            };
-        }
-        
-        __export void fs_closedir(fs_dirent_t *self) {
-            if (self == nullptr) return;
-            if (self->handler) {
-                closedir((DIR*)self->handler);
-            }
-            delete self;
-            self = nullptr;
-        }
-        
-        __export bool fs_seekdir(fs_dirent_t *self) {
-            if (!self->handler) return false;
-            
-            struct dirent* dent = readdir((DIR*)self->handler);
-            if (!dent) return false;
-            self->current_name = dent->d_name;
-            self->current_path = self->directory + self->current_name;
-            return true;
-        }
-    #endif
-
-    __export const char *fs_readdir_name(fs_dirent_t *self) {
-        return self->current_name.c_str();
-    }
-
-    __export const char *fs_readdir_path(fs_dirent_t *self) {
-        return self->current_path.c_str();
     }
 }

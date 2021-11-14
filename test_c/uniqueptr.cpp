@@ -11,6 +11,7 @@
     #pragma comment(lib, "lua51.lib")
 #endif
 
+/*** unique_ptr test ***/
 enum person_sex_enum {
     male, female
 };
@@ -42,14 +43,32 @@ inline void person_hello(person_t *self) {
     printf("Hello, I'm %s.\n\tsex: %s\n\tage: %d\n", self->name.c_str(), person_sex(self).c_str(), self->age);
 }
 
-// // * if you delete unique_ptr explicitly, program will be crashed
-// inline void delete_person(person_t *self) {
-//     if (self) {
-//         delete self;
-//         self = nullptr;
-//     }
-// }
+// unique_ptr::reset(): delete the resource explicitly
+// => to call the reset function, borrow the mutable reference
+inline void drop_person(std::unique_ptr<person_t> &self) {
+    self.reset();
+}
 
+
+/*** unique_ptr custom deleter ***/
+inline void custom_delete_person(person_t *person) {
+    if (person) {
+        printf("See you %s...\n", person->name.c_str());
+        delete person;
+        person = nullptr;
+    }
+}
+
+inline std::unique_ptr<person_t, std::function<void(person_t*)>> custom_new_person(const std::string name, person_sex_enum sex, unsigned long age) {
+    return std::unique_ptr<person_t, std::function<void(person_t*)>>(new person_t { name, sex, age}, custom_delete_person);
+}
+
+inline void custom_drop_person(std::unique_ptr<person_t, std::function<void(person_t*)>> &self) {
+    self.reset();
+}
+
+
+/*** register class to lua test ***/
 typedef long i32;
 
 class Test {
@@ -69,13 +88,17 @@ private:
     i32 val;
 };
 
+/*** main process ***/
 int main() {
     auto john = new_person("John Doe", person_sex_enum::male, 25);
-    
     // unique_ptr::get(): get raw pointer to borrow the ownership
     person_hello(john.get());
-    
-    // delete_person(john.get()); // --> will be crashed because delete_person() does not the ownership
+    // borrow the mutable reference and release the resource
+    drop_person(john);
+
+    auto jane = custom_new_person("Jane Doe", person_sex_enum::female, 18);
+    person_hello(jane.get());
+    custom_drop_person(jane); // => See you Jane Doe...
 
     /*** Lua test ***/
     sol::state lua;
@@ -88,10 +111,12 @@ int main() {
         "name", &person_t::name,
         "sex", &person_t::sex,
         "age", &person_t::age,
-        "hello", person_hello
+        "hello", person_hello,
+        "drop", custom_drop_person
     );
     lua.set_function("new_person", new_person);
-    lua.script("local jane = new_person('Jane Doe', person_sex_enum.female, 18); jane:hello()");
+    lua.set_function("custom_new_person", custom_new_person);
+    lua.script("local yoya = custom_new_person('Yoya Ameno', person_sex_enum.male, 33); yoya:hello(); yoya:drop()");
 
     lua.new_usertype<Test>("Test",
         sol::constructors<

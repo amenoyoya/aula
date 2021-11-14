@@ -29,6 +29,9 @@ namespace aula {
             #endif
         }
 
+        /*** ================================================== ***/
+        /*** binary manager ***/
+
         /// io seek_from enum
         enum seekfrom {
             head, cur, tail
@@ -39,48 +42,61 @@ namespace aula {
             std::string data;
             unsigned long head, tail, iter;
         };
+        typedef std::unique_ptr<binary_t> binary_ptr;
 
-        /// create new binary
-        // @param data: if null is designated => empty binary data will be created, else => create copied data
-        inline std::unique_ptr<binary_t> binary_new(const char *data, size_t size) {
-            auto self = std::unique_ptr<binary_t>(new binary_t {"", 0, 0, 0});
-            self->data.resize(size + 1); // +1 buffer for null pointer of the end
-            self->data[size] = 0;
-            self->head = (unsigned long)self->data.c_str();
-            self->tail = self->head + size;
-            if (data) memcpy((void*)self->data.c_str(), data, size);
-            return std::move(self);
+        /// create new binary from pointer address (copy)
+        // @param pointer: if 0 is designated => empty binary data will be created, else => create copied data from pointer
+        binary_ptr binary_new(unsigned long pointer, size_t size);
+
+        /// create new binary from string (copy)
+        // @param data: if null is designated => empty binary data will be created, else => create copied data from string
+        // @param size: if -1 is designated => convert to strlen(data)
+        inline binary_ptr binary_newstr(const char *data, size_t size = size_t(-1)) {
+            return std::move(binary_new((unsigned long)data, size == size_t(-1) ? strlen(data) : size));
         }
 
-        /// open binary as management target
+        /// open binary as management target from pointer address
         // @param pointer: memory address of the target data (just copy pointer, ownership will not be moved)
-        inline std::unique_ptr<binary_t> binary_open(unsigned long pointer, size_t size) {
-            auto self = std::unique_ptr<binary_t>(new binary_t {"", 0, 0, 0});
+        inline binary_ptr binary_open(unsigned long pointer, size_t size) {
+            auto self = binary_ptr(new binary_t {"", 0, 0, 0});
             self->head = pointer;
             self->tail = self->head + size;
             return std::move(self);
         }
 
+        /// open binary as management target from string
+        // @param size: if -1 is designated => convert to strlen(data)
+        inline binary_ptr binary_openstr(const char *data, size_t size = size_t(-1)) {
+            return std::move(binary_open((unsigned long)data, size == size_t(-1) ? strlen(data) : size));
+        }
+
+        /// release binary manager explicitly
+        inline void binary_close(binary_ptr &self) {
+            return self.reset();
+        }
+
         /// resize allocated memory size (only new binary)
         // iterator position will be set to head
-        inline void binary_resize(binary_t *self, size_t size) {
-            if (!self->data.empty()) {
-                self->data.resize(size + 1);
-                self->data[size] = 0;
-                self->head = (unsigned long)self->data.c_str();
-                self->tail = self->head + size;
-                self->iter = 0;
-            }
-        }
+        void binary_resize(binary_t *self, size_t size);
 
         /// reserve memory allocation (only new binary)
         inline void binary_reserve(binary_t *self, size_t size) {
             if (!self->data.empty()) self->data.reserve(size);
         }
 
-        /// get pointer
-        inline const void *binary_ptr(binary_t *self, unsigned long from = 0) {
-            return (const void *)(self->head + from);
+        /// get raw pointer address
+        inline unsigned long binary_addr(binary_t *self, unsigned long from = 0) {
+            return self->head + from;
+        }
+
+        /// get raw pointer as string
+        inline const char *binary_tostr(binary_t *self, unsigned long from = 0) {
+            return (const char*)(self->head + from);
+        }
+
+        /// get binary size (bytes)
+        inline size_t binary_size(binary_t *self) {
+            return self->tail - self->head;
         }
 
         /// append data (only new binary)

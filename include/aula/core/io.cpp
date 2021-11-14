@@ -2,6 +2,26 @@
 
 namespace aula {
     namespace io {
+        binary_ptr binary_new(unsigned long pointer, size_t size) {
+            auto self = binary_ptr(new binary_t {"", 0, 0, 0});
+            self->data.resize(size + 1); // +1 buffer for null pointer of the end
+            self->data[size] = 0;
+            self->head = (unsigned long)self->data.c_str();
+            self->tail = self->head + size;
+            if (pointer != 0) memcpy((void*)self->data.c_str(), (const char*)pointer, size);
+            return std::move(self);
+        }
+
+        void binary_resize(binary_t *self, size_t size) {
+            if (!self->data.empty()) {
+                self->data.resize(size + 1);
+                self->data[size] = 0;
+                self->head = (unsigned long)self->data.c_str();
+                self->tail = self->head + size;
+                self->iter = 0;
+            }
+        }
+
         void binary_seek(binary_t *self, long pos, seekfrom from) {
             size_t size = self->tail - self->head;
             switch (from) {
@@ -134,7 +154,7 @@ namespace aula {
             size_t size = self->tail - self->head, p = 0, keysize = key.size();
             if (size < 4) return false; // crc32 checksum not found
             // decrypt the binary except of crc32 checksum (4byte)
-            auto original = binary_new((const char*)pointer, size = size - 4); // store oginal data
+            auto original = binary_newstr((const char*)pointer, size = size - 4); // store oginal data
             for (size_t i = 0; i < size; ++i) {
                 char c = (p < keysize ? key[p]: ' '); // padding by space if keysize < KEYSIZE
                 switch (i % 3) {
@@ -149,7 +169,7 @@ namespace aula {
             binary_seek(self, size, seekfrom::head); // original binary iterator seek to crc32 position
             if (binary_crc32(data.get()) != binary_getu32(self)) {
                 // key is wrong
-                memcpy(pointer, binary_ptr(original.get()), size); // restore original data
+                memcpy(pointer, binary_tostr(original.get()), size); // restore original data
                 return false;
             }
             // remove crc32
