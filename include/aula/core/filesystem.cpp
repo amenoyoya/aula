@@ -12,13 +12,8 @@ namespace aula {
         bool copyfile(const std::string &src, const std::string &dest, bool isOverwrite) {
             if (!isOverwrite && path::isfile(dest)) return false;
             
-            auto in = file_open(src, "rb"), out = file_open(dest, "wb");
-            if (!in || !out) return false;
-            
-            size_t filesize = file_size(in.get());
-            auto content = file_read(in.get(), filesize);
-            if (io::binary_size(content.get()) != filesize) return false;
-            return filesize == file_write(out.get(), content.get());
+            auto content = readfile(src);
+            return content ? writefile(dest, content.get()) : false;
         }
 
         bool rmfile(const std::string &filename) {

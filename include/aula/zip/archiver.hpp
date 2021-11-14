@@ -2,111 +2,111 @@
 
 #include "../core.hpp"
 
-extern "C" {
-    /// zip archiver structure
-    typedef struct {
-        unsigned long  handler;
-        unsigned short level; // compression level
-    } zip_archiver_t;
+namespace aula {
+    namespace zip {
+        /// zip archiver structure
+        struct archiver_t {
+            unsigned long   handler;
+            unsigned short  compresslevel;  // compression level: 0 - 9
+            std::string     comment,        // if you designated this before archiver_close, global comment will be set
+                            password;       // compress password
+        };
+        typedef std::unique_ptr<archiver_t, std::function<void(archiver_t*)>> archiver_ptr;
 
-    /// zip extractor structure
-    typedef struct {
-        unsigned long handler;
-        size_t size; // total zip file size
-    } unz_archiver_t;
+        /// zip extractor structure
+        struct extractor_t {
+            unsigned long   handler;
+            size_t          size,           // total zip file size
+                            entries,        // entry count
+                            comment_size;   // global comment length
+            std::string     comment;        // global comment
+        };
+        typedef std::unique_ptr<extractor_t, std::function<void(extractor_t*)>> extractor_ptr;
 
-    /// date time structure
-    typedef struct {
-        unsigned long sec, min, hour, day, month, year;
-    } datetime_t;
+        /// date time structure
+        struct datetime_t {
+            unsigned long sec, min, hour, day, month, year;
+        };
 
-    /// file information in zip structure
-    typedef struct {
-        unsigned long   version, // created version
-                        needed_version, // needed version for uncompression
-                        flag, // bit flag
-                        compression_method, // compression method
-                        dos_date, // modified time (DOS)
-                        crc32, // crc32
-                        compressed_size, // compressed size
-                        uncompressed_size, // uncompressed size
-                        filename_size, // file name length
-                        extra_size, // extra fields size
-                        comment_size, // comment length
-                        disknum_start, // start position of disk num
-                        internal_attr, // internal file attribution
-                        external_attr; // external file attribution
-        datetime_t      created_at; // created date time
-    } unz_file_info_t;
+        /// file information in zip structure
+        struct fileinfo_t {
+            unsigned long   version, // created version
+                            needed_version, // needed version for uncompression
+                            flag, // bit flag
+                            compression_method, // compression method
+                            dos_date, // modified time (DOS)
+                            crc32, // crc32
+                            compressed_size, // compressed size
+                            uncompressed_size, // uncompressed size
+                            filename_size, // file name length
+                            extra_size, // extra fields size
+                            comment_size, // comment length
+                            disknum_start, // start position of disk num
+                            internal_attr, // internal file attribution
+                            external_attr; // external file attribution
+            datetime_t      created_at; // created date time
+            std::string     filename, comment;
+            io::binary_ptr  content; // uncompressed content data
+        };
 
-    /// local file position in the zip file
-    typedef struct {
-        unsigned long   pos_in_zip,  // offset in zip file directory
-                        num_of_file; // of file
-    } unz_file_pos_t;
+        /// local file position in the zip file
+        struct filepos_t {
+            unsigned long   pos_in_zip,  // offset in zip file directory
+                            num_of_file; // of file
+        };
 
-    /// open zip file (archiver)
-    // @param mode:
-    //         "w": create new file.
-    //         "w+": embed zip data to the file
-    //         "a": append data to the zip file
-    //        * parent directories will be created automatically
-    // @param compresslevel: 0 - 9
-    __export zip_archiver_t *zip_open(const char *filename, const char *mode, unsigned short compresslevel);
+        /// open zip file (archiver)
+        // @param mode:
+        //         "w": create new file.
+        //         "w+": embed zip data to the file
+        //         "a": append data to the zip file
+        //        * parent directories will be created automatically
+        archiver_ptr zip_open(const std::string &filename, const std::string &mode = "w");
 
-    /// close zip archiver
-    // @param comment: zip global comment can be appended if you want
-    __export void zip_close(zip_archiver_t *self, const char *comment);
+        /// release zip archiver explicitly
+        inline void zip_close(archiver_ptr &self) {
+            self.reset();
+        }
 
-    /// append data as a file into zip file
-    __export bool zip_append(zip_archiver_t *self, const char *data, size_t datasize, const char *dest_filename, const char *password, const char *comment);
-    
-    /// append file into zip file
-    __export bool zip_append_file(zip_archiver_t *self, const char *src_filename, const char *dest_filename, const char *password, const char *comment);
-
-
-    /// open zip file (extractor)
-    __export unz_archiver_t *unz_open(const char *filename);
-
-    /// close zip extractor
-    __export void unz_close(unz_archiver_t *self);
-
-    /// get global comment of the zip file
-    __export const char *unz_comment(unz_archiver_t *self);
-    
-    /// locate first entry file in the zip file
-    __export bool unz_locate_first(unz_archiver_t *self);
-
-    /// locate next entry file in the zip file
-    __export bool unz_locate_next(unz_archiver_t *self);
-
-    /// locate specified name of file in the zip file
-    __export bool unz_locate_name(unz_archiver_t *self, const char *name);
-
-    /// get current file information in the zip data
-    __export bool unz_info(unz_archiver_t *self, unz_file_info_t *dest, char *filename, size_t filename_size, char *comment, size_t comment_size);
-
-    /// get current file content (uncompressed) in the zip file
-    __export bool unz_content(unz_archiver_t *self, char *dest, size_t datasize, const char *password);
-
-    /// get current file position in the zip data
-    __export bool unz_pos(unz_archiver_t *self, unz_file_pos_t *dest);
-
-    /// locate to the designated position
-    __export bool unz_locate(unz_archiver_t *self, unz_file_pos_t *pos);
-
-    /// get the zip file offset (if the data is embedded zip data, return larger than 0)
-    __export size_t unz_offset(unz_archiver_t *self);
+        /// append data as a file into zip file
+        bool zip_append(archiver_t *self, io::binary_t *data, const std::string &dest_filename, const std::string &comment = "");
+        
+        /// append file into zip file
+        inline bool zip_appendfile(archiver_t *self, const std::string &src_filename, const std::string &dest_filename, const std::string &comment = "") {
+            auto data = fs::readfile(src_filename);
+            return data ? zip_append(self, data.get(), dest_filename, comment) : false;
+        }
 
 
-    /*** utility functions ***/
+        /// open zip extractor
+        extractor_ptr unz_open(const std::string &filename);
 
-    /// remove embedded zip data from the file
-    __export bool unz_rmdata(const char *filename);
+        /// release zip extractor explicitly
+        inline void unz_close(extractor_ptr &self) {
+            self.reset();
+        }
 
-    /// Compress the directory to zip
-    __export bool zip_compress(const char *dir, const char *output, unsigned short level, const char *password, const char *mode, const char *root);
+        /// locate first entry file in the zip file
+        bool unz_locate_first(extractor_t *self);
 
-    /// uncompress the zip into directory
-    __export bool unz_uncompress(const char *zip, const char *dir, const char *password);
+        /// locate next entry file in the zip file
+        bool unz_locate_next(extractor_t *self);
+
+        /// locate specified name of file in the zip file
+        bool unz_locate_name(extractor_t *self, std::string name);
+
+        /// get current file information in the zip data
+        // @param isContentRequired: if true is designated => uncompressed content will be set to fileinfo_t.content
+        // @param password: extracting password when isContentRequired == true
+        std::unique_ptr<fileinfo_t> unz_info(extractor_t *self, bool isContentRequired = false, const std::string &password = "");
+
+        /// get current file position in the zip data
+        std::unique_ptr<filepos_t> unz_pos(extractor_t *self);
+
+        /// locate to the designated position
+        bool unz_locate(extractor_t *self, filepos_t *pos);
+
+        /// get the zip file offset (if the data is embedded zip data, return larger than 0)
+        size_t unz_offset(extractor_t *self);
+    }
 }

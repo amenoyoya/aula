@@ -115,6 +115,21 @@ namespace aula {
             return 0 == fflush(self);
         }
 
+        /*** Utility helper functions ***/
+        /// read file content
+        // @return io::binary_ptr|nullptr
+        inline io::binary_ptr readfile(const std::string &filename) {
+            auto fp = file_open(filename, "rb");
+            return fp ? file_read(fp.get(), file_size(fp.get())) : nullptr;
+        }
+
+        /// write content to file
+        inline bool writefile(const std::string &filename, io::binary_t *data) {
+            size_t size = io::binary_size(data);
+            auto fp = file_open(filename, "wb");
+            return fp ? size == file_write(fp.get(), data, size) : false;
+        }
+
 
         /*** ================================================== ***/
         /*** file enumerator ***/
