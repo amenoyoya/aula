@@ -1,8 +1,10 @@
 ﻿-- version
-Aula.version = "v1.3.3"
+aula = {
+    version = "2.0.0"
+}
 
 -- help text
-local helpText = [==[
+local helptext = [==[
 Aula is a Lua script engine.
 
 Usage:
@@ -28,14 +30,13 @@ The script file will be executed:
     Or if the command line arguments[1] is "*.lua" file: execute a plain Lua script file
     Or if the command line arguments[1] is "*.sym" file: execute a ompiled Lua byte-code file
     Or if the command line arguments[1] is "*.tl" file: execute a Teal script file
-    
-    
+
 Aula will be executed as interactive-mode if there are no commands and script files.
 ]==]
 
 -- print version info
-local function printVersion()
-    printf("Aula Engine %s -- Copyright (C) 2021 amenoyoya. https://github.com/amenoyoya/aula\n", Aula.version)
+local function printver()
+    printf("Aula Engine %s -- Copyright (C) 2021 amenoyoya. https://github.com/amenoyoya/aula\n", aula.version)
     printf("%s -- Copyright (C) 2005-2017 Mike Pall. http://luajit.org/\n", jit.version)
 end
 
@@ -48,32 +49,29 @@ package.path = "?.lua;?.sym;?.tl;?/init.lua;?/init.sym;?/init.tl;" .. package.pa
 package.cpath = "?.dll;?.so;" .. package.cpath
 
 -- extended package loader: search from current application (os.arv[0]) resource
-table.insert(package.loaders, 1, function (module_name)
-    local arc = Aula.Zip.Archiver.new(os.argv[0], "r")
-    if arc:getState() == Aula.Object.State.FAILED then
-        return "\n\tcurrent application has no resource: '" .. os.argv[0] .. "'"
-    end
+local __resource = fs.unz.open(os.argv[0])
 
+if __resource == nil then
+    return "\n\tAula has no resource: '" .. os.argv[0] .. "'"
+end
+
+table.insert(package.loaders, 1, function (module_name)
     local error_message = ""
     module_name = module_name:gsub("%.", "/") -- "." => "/"
 
-    for entry in package.path:gmatch("[^;]+") do
-        if arc:locateFile(entry:replace("?", module_name)) then
-            local info = arc:getCurrentFileInformation(true)
+    for entry in package.path:gmatch"[^;]+" do
+        local modname = entry:replace("?", module_name)
+        if __resource:locate_name(modname) then
+            local info = __resource:info(true)
 
-            if info.uncompressedData:getSize() > 0 then
-                arc:close()
-                
-                local loader, err = load(info.uncompressedData:toString(), "@aula://" .. module_name)
-                if loader == nil then
-                    error(err)
-                end
+            if info.content:len() > 0 then
+                local loader, err = load(info.content, "@aula://" .. module_name)
+                if loader == nil then error(err) end
                 return loader
             end
         end
-        error_message = error_message .. "\n\tno file 'aula://" .. module_name .. "'"
+        error_message = error_message .. "\n\tno file '" .. modname .. "' in '" .. os.argv[0] .. "' resource"
     end
-    arc:close()
     return error_message
 end)
 
@@ -85,36 +83,36 @@ require "@system"
 -- CLI commands
 local commands = {
     help = function ()
-        print(helpText)
+        print(helptext)
     end,
     
     version = function ()
-        printVersion()
+        printver()
     end,
 
     transpile = function ()
         local input, output = os.argv[2], os.argv[3]
 
-        if input == nil or not Aula.Path.isFile(input) then
+        if input == nil or not fs.path.isfile(input) then
             error("no Teal script file is input")
         end
         if output == nil then
             error("no output Lua script file path is specified")
         end
 
-        local code, err = teal.transpile(Aula.IO.readFile(input):toString(), input)
+        local code, err = teal.transpile(fs.readfile(input), input)
         if code == nil then
             error(err)
         end
-        if not Aula.IO.writeFile(output, Aula.IO.Binary.new(code, code:len())) then
-            errorf("cannot write Lua script into \"%s\"", output)
+        if 0 == fs.writefile(output, code) then
+            errorf("cannot write Lua script into '%s'", output)
         end
     end,
 
     compile = function ()
         local input, output = os.argv[2], os.argv[3]
 
-        if input == nil or not Aula.Path.isFile(input) then
+        if input == nil or not fs.path.isfile(input) then
             error("no Lua script file is input")
         end
         if output == nil then
@@ -122,22 +120,20 @@ local commands = {
         end
 
         local f, err = loadfile(input)
-        if f == nil then
-            error(err)
-        end
+        if f == nil then error(err) end
 
         local code = string.dump(f)
-        if not Aula.IO.writeFile(output, Aula.IO.Binary.new(code, code:len())) then
-            errorf("cannot write Lua byte-code into \"%s\"", output)
+        if 0 == fs.writefile(output, code) then
+            errorf("cannot write Lua byte-code into '%s'", output)
         end
     end,
 
     test = function ()
         -- Execute test codes in the target directory or current directory, and measure execution time
         -- * Test codes: `*_test.lua` or `*_test.tl`
-        local files = Aula.IO.enumerateFiles(os.argv[2] or ".", -1, Aula.IO.EnumFileOption.FILE)
-        local cntOK, cntNG = 0, 0 -- count of test results
-        local testStart = os.systime() -- measure execution time
+        local files = fs.enumfiles(os.argv[2] or ".", -1, "file")
+        local ok, ng = 0, 0 -- count of test results
+        local teststart = os.systime() -- measure execution time
 
         for _, file in ipairs(files) do
             if file.path:match("_test%.lua$") or file.path:match("_test%.tl$") then
@@ -150,22 +146,22 @@ local commands = {
 
                     if result then -- OK
                         printf("✅ %s (%d ms)\n", file.path, os.systime() - start)
-                        cntOK = cntOK + 1
+                        ok = ok + 1
                     else -- NG
                         printf("❌ %s (%d ms)\n", file.path, os.systime() - start)
                         print(err)
-                        cntNG = cntNG + 1
+                        ng = ng + 1
                     end
                 else -- syntax error
                     printf("❌ %s (%d ms)\n", file.path, os.systime() - start)
                     print(err)
-                    cntNG = cntNG + 1
+                    ng = ng + 1
                 end
             end
         end
         -- display test summary
-        printf("\nTests:\t%d failed, %d total\n", cntNG, cntOK + cntNG)
-        printf("Time:\t%d ms\n\n", os.systime() - testStart)
+        printf("\nTests:\t%d failed, %d total\n", ng, ok + ng)
+        printf("Time:\t%d ms\n\n", os.systime() - teststart)
     end,
 }
 
@@ -178,30 +174,30 @@ if f then
 end
 
 -- case: "{__dir}/main.lua" or "{__dir}/main.sym" or "{__dir}/main.tl" script file exists
-local dir = Aula.Path.appendSlash(Aula.Path.getParentDirectory(os.argv[0]))
-local function doMainScript(scriptFile)
-    if Aula.Path.isFile(scriptFile) then
-        table.insert(os.argv, 1, scriptFile) -- os.argv[1] <= main script file
-        dofile(scriptFile)
+local dir = fs.path.append_slash(fs.path.parentdir(os.argv[0]))
+local function do_main_script(scriptfile)
+    if fs.path.isfile(scriptfile) then
+        table.insert(os.argv, 1, scriptfile) -- os.argv[1] <= main script file
+        dofile(scriptfile)
         os.exit(0)
     end
 end
 
-doMainScript(dir .. "main.lua")
-doMainScript(dir .. "main.sym")
-doMainScript(dir .. "main.tl")
+do_main_script(dir .. "main.lua")
+do_main_script(dir .. "main.sym")
+do_main_script(dir .. "main.tl")
 
 -- case: argv[1] is "*.lua" or "*.sym" or "*.tl" script file
 if os.argv[1] then
-    local scriptFile = Aula.Path.complete(os.argv[1])
-    local ext = Aula.Path.getExtension(scriptFile)
-    if (ext == ".lua" or ext == ".sym" or ext == ".tl") and Aula.Path.isFile(scriptFile) then
-        dofile(scriptFile)
+    local scriptfile = fs.path.complete(os.argv[1])
+    local ext = fs.path.ext(scriptfile)
+    if (ext == ".lua" or ext == ".sym" or ext == ".tl") and fs.path.isfile(scriptfile) then
+        dofile(scriptfile)
         os.exit(0)
     end
 end
 
 -- case: no main script file exists
 --- => execute interactive-mode
-printVersion()
+printver()
 debug.debug(os.argv[0])

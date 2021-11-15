@@ -1,4 +1,14 @@
-﻿#include <aula/lua.hpp>
+﻿#define _USE_AULA_CORE
+#include <aula/core.hpp>
+#include <cassert>
+
+#define SOL_ALL_SAFETIES_ON 1
+#define SOL_LUAJIT 1
+#include <sol/sol.hpp>
+
+#ifdef _MSC_VER
+    #pragma comment(lib, "lua51.lib")
+#endif
 
 #define LUA_PROMPT	"> "	/* Interactive prompt. */
 #define LUA_PROMPT2	">> "	/* Continuation prompt. */
@@ -6,10 +16,10 @@
 
 static void l_message(const std::string &pname, const std::string &msg) {
     if (pname.size() > 0) {
-        Aula::IO::Stderr->write(pname + ": ", false);
+        _fprintf(stderr, pname + ": ");
     }
-    Aula::IO::Stderr->write(msg);
-    Aula::IO::Stderr->flush();
+    _fputs(stderr, msg);
+    fflush(stderr);
 }
 
 static int report(lua_State *L, int status, const char *progname) {
@@ -37,8 +47,8 @@ static void write_prompt(lua_State *L, int firstline) {
     lua_getfield(L, LUA_GLOBALSINDEX, firstline ? "_PROMPT" : "_PROMPT2");
     p = lua_tostring(L, -1);
     if (p == NULL) p = firstline ? LUA_PROMPT : LUA_PROMPT2;
-    Aula::IO::Stdout->write(p, false);
-    Aula::IO::Stdout->flush();
+    _fprintf(stdout, p);
+    fflush(stdout);
     lua_pop(L, 1);  /* remove global */
 }
 
@@ -58,7 +68,7 @@ static int incomplete(lua_State *L, int status) {
 static int pushline(lua_State *L, int firstline) {
     write_prompt(L, firstline);
 
-    std::string buf = Aula::IO::Stdin->readString(LUA_MAXINPUT);
+    std::string buf = aula::io::getstr(stdin, LUA_MAXINPUT);
     size_t len = buf.size();
     if (len > 0) {
         if (len > 0 && buf[len-1] == '\n') buf[len-1] = '\0';
@@ -116,19 +126,55 @@ static void dotty(lua_State *L, const char *progname) {
         }
     }
     lua_settop(L, 0);  /* clear stack */
-    Aula::IO::Stdout->write(""); // \n
-    Aula::IO::Stdout->flush();
+    _fputs(stdout, ""); // \n
+    fflush(stdout);
+}
+
+template<typename State>
+void openlib(State &lua) {
+    lua.open_libraries(
+        sol::lib::base,
+        sol::lib::coroutine,
+        sol::lib::package,
+        sol::lib::string,
+        sol::lib::table,
+        sol::lib::io,
+        sol::lib::math,
+        sol::lib::os,
+        sol::lib::debug,
+        sol::lib::ffi,
+        sol::lib::bit32,
+        sol::lib::jit
+    );
+
+    // overload default `print` function
+    lua.set_function("print", [](const std::string &str) { return aula::io::putstr(stdout, str + "\n"); });
+
+    struct person_t {
+        std::string name;
+        unsigned int age;
+    };
+
+    lua.new_usertype<person_t>("person_t",
+        "name", &person_t::name,
+        "age", &person_t::age
+    );
+
+    lua["stdout_ptr"] = (unsigned long)stdout;
 }
 
 
 __main() {
     sol::state lua;
-    std::string errorMessage;
-    
-    if (!Aula::Lua::registerLibrary(lua, &errorMessage)) {
-        Aula::IO::Stderr->write(errorMessage);
-        return 1;
-    }
+    openlib(lua);
+
+    /// test: C stdout pointer address == Lua io.stdout pointer address
+    unsigned long stdout_ptr = lua.script("return stdout_ptr");
+    unsigned long io_stdout = lua.script("return tonumber(tostring(ffi.cast('void*', io.stdout)):match'0x[0-9a-f]+')");
+    assert(stdout_ptr == io_stdout);
+    _fprintf(stdout, "stdout: %d\n", stdout_ptr);
+
+    /// dotty
     dotty(lua, "dotty");
     return 0;
 }

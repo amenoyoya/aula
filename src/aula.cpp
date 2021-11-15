@@ -1,50 +1,50 @@
 ﻿#include <aula/lua.hpp>
 
+#ifdef _WINDOWS
+    #pragma comment(lib, "libaula.lib")
+#endif
+
 __main() {
-    /// Aula Lua Engine 準備
+    /// prepare Aula Lua Engine
     sol::state lua;
     std::string errorMessage;
-    if (!Aula::Lua::registerLibrary(lua, &errorMessage)) {
-        Aula::IO::Stderr->write(errorMessage);
+    if (!aula::lua::openlib(lua, &errorMessage)) {
+        _fputs(stderr, errorMessage);
         return 1;
     }
 
-    /// コマンドライン引数
-    std::vector<std::string> arguments = Aula::System::getUTF8CommandLineArguments(argv, argc);
-
-    // os.argv[]で引数取得可能に
+    // os.argv[] <= command line arguments
     auto os = lua["os"].get_or_create<sol::table>();
-    os["argv"] = sol::as_table(arguments);
+    os["argv"] = sol::as_table(args);
 
-    // main script: 実行ファイルのリソースzipデータから main.sym を読み込んで実行する
-    Aula::Zip::Archiver arc(arguments[0], "r");
-
-    if (arc.getState() == Aula::Object::State::FAILED) {
-        Aula::IO::Stderr->write(arc.getMessage());
+    // main script: main.sym in zip resource of this execution file
+    auto unz = aula::zip::unz_open(args[0]);
+    if (!unz) {
+        _fputs(stderr, "no resource: " + args[0]);
         return 1;
     }
-    if (!arc.locateFile("main.sym")) {
-        Aula::IO::Stderr->write("no main script found in \"" + arguments[0] + "\"");
+    if (!aula::zip::unz_locate_name(unz.get(), "main.sym")) {
+        _fputs(stderr, "no main script: " + args[0]);
         return 1;
     }
 
-    auto mainScript = arc.getCurrentFileInformation(true);
-    auto script = lua.load_buffer(
-        (const char *)mainScript->uncompressedData.getPointer(),
-        mainScript->uncompressedData.getSize(),
-        "@" + arguments[0]
-    );
-    
+    auto info = aula::zip::unz_info(unz.get(), true);
+    if (!info) {
+        _fputs(stderr, "cannot extract main script: " + args[0]);
+        return 1;
+    }
+
+    auto script = lua.load_buffer(aula::io::binary_tostr(info->content.get()), info->uncompressed_size, "@" + args[0]);
     if (!script.valid()) {
         sol::error err = script;
-        Aula::IO::Stderr->write(Aula::Encoding::toUTF8(err.what()));
+        _fputs(stderr, err.what());
         return 1;
     }
 
     auto result = script();
     if (!result.valid()) {
         sol::error err = result;
-        Aula::IO::Stderr->write(Aula::Encoding::toUTF8(err.what()));
+        _fputs(stderr, err.what());
         return 1;
     }
     return 0;

@@ -3,11 +3,10 @@
 namespace aula {
     namespace io {
         binary_ptr binary_new(unsigned long pointer, size_t size) {
-            auto self = binary_ptr(new binary_t {"", 0, 0, 0});
+            auto self = binary_ptr(new binary_t {"", 0, 0, size});
             self->data.resize(size + 1); // +1 buffer for null pointer of the end
             self->data[size] = 0;
             self->head = (unsigned long)self->data.c_str();
-            self->tail = self->head + size;
             if (pointer != 0) memcpy((void*)self->data.c_str(), (const char*)pointer, size);
             return std::move(self);
         }
@@ -17,33 +16,32 @@ namespace aula {
                 self->data.resize(size + 1);
                 self->data[size] = 0;
                 self->head = (unsigned long)self->data.c_str();
-                self->tail = self->head + size;
+                self->size = size;
                 self->iter = 0;
             }
         }
 
         void binary_seek(binary_t *self, long pos, seekfrom from) {
-            size_t size = self->tail - self->head;
             switch (from) {
             case seekfrom::head:
                 if (pos < 0) {
                     self->iter = 0;
                 } else {
-                    self->iter = (size <= size_t(pos) ? (size == 0 ? 0 : size - 1) : pos);
+                    self->iter = (self->size <= size_t(pos) ? (self->size == 0 ? 0 : self->size - 1) : pos);
                 }
                 break;
             case seekfrom::cur:
                 if ((long)self->iter + pos < 0) {
                     self->iter = 0;
-                } else if (self->iter + pos >= size) {
-                    self->iter = size;
+                } else if (self->iter + pos >= self->size) {
+                    self->iter = self->size;
                 } else {
                     self->iter += pos;
                 }
                 break;
             case seekfrom::tail:
-                if (pos > 0) self->iter = size;
-                else self->iter = (size < size_t(-pos) ? 0 : size + pos);
+                if (pos > 0) self->iter = self->size;
+                else self->iter = (self->size < size_t(-pos) ? 0 : self->size + pos);
                 break;
             }
         }
@@ -119,7 +117,7 @@ namespace aula {
         unsigned long binary_crc32(binary_t *self, unsigned long start) {
             unsigned long result = start;
             unsigned char *p = (unsigned char*)self->head;
-            size_t size = self->tail - self->head;
+            size_t size = self->size;
             
             for (; size-- > 0; ++p) {
                 result = (result >> 8) ^ __crc32table[(*p) ^ (result & 0xFF)];
@@ -132,9 +130,9 @@ namespace aula {
 
             unsigned char *pointer = (unsigned char*)self->head;
             unsigned long crc = binary_crc32(self); // get crc32 hash of this binary
-            size_t size = self->tail - self->head, p = 0, keysize = key.size();
+            size_t p = 0, keysize = key.size();
             // encrypt
-            for (size_t i = 0; i < size; ++i) {
+            for (size_t i = 0; i < self->size; ++i) {
                 char c = (p < keysize ? key[p] : ' '); // padding by space if keysize < KEYSIZE
                 switch (i % 3) {
                 case 0: *(pointer +i) += c; break;
@@ -151,7 +149,7 @@ namespace aula {
             if (self->data.empty()) return false; // if not new binary => fail
 
             unsigned char *pointer = (unsigned char*)self->head;
-            size_t size = self->tail - self->head, p = 0, keysize = key.size();
+            size_t size = self->size, p = 0, keysize = key.size();
             if (size < 4) return false; // crc32 checksum not found
             // decrypt the binary except of crc32 checksum (4byte)
             auto original = binary_newstr((const char*)pointer, size = size - 4); // store oginal data

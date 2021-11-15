@@ -4,6 +4,7 @@ cd %~dp0
 call ..\vcvars.bat
 
 :: build miniaula
+cd %~dp0
 %compile% miniaula.cpp
 @link.exe /ERRORREPORT:NONE /NOLOGO /MACHINE:X86 /OUT:miniaula.exe miniaula.obj
 

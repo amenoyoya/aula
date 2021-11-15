@@ -3,7 +3,7 @@
 
 inline bool writefile(const std::string &filename, aula::io::binary_t *binary) {
     FILE *fp = fopen(filename.c_str(), "wb");
-    bool result = 0 < fwrite(aula::io::binary_tostr(binary), 1, binary->tail - binary->head, fp);
+    bool result = 0 < fwrite(aula::io::binary_tostr(binary), 1, binary->size, fp);
     fclose(fp);
     return result;
 }

@@ -29,6 +29,20 @@ namespace aula {
             #endif
         }
 
+        /// UTF-8 supported stdout
+        inline int putstr(FILE *fp, const std::string &str) {
+            return fputws(std::move(string::u8towcs(str)).c_str(), fp);
+        }
+
+        /// UTF-8 supported stdin
+        inline std::string getstr(FILE *fp, size_t size = 512) {
+            wchar_t *buffer = new wchar_t[size + 1];
+            std::string result = std::move(string::wcstou8(fgetws(buffer, size, fp)));
+            delete[] buffer;
+            result.erase(result.end() - 1); // remove \n
+            return std::move(result);
+        }
+
         /*** ================================================== ***/
         /*** binary manager ***/
 
@@ -40,7 +54,7 @@ namespace aula {
         /// binary management structure
         struct binary_t {
             std::string data;
-            unsigned long head, tail, iter;
+            unsigned long head, iter, size;
         };
         typedef std::unique_ptr<binary_t> binary_ptr;
 
@@ -58,9 +72,7 @@ namespace aula {
         /// open binary as management target from pointer address
         // @param pointer: memory address of the target data (just copy pointer, ownership will not be moved)
         inline binary_ptr binary_open(unsigned long pointer, size_t size) {
-            auto self = binary_ptr(new binary_t {"", 0, 0, 0});
-            self->head = pointer;
-            self->tail = self->head + size;
+            auto self = binary_ptr(new binary_t {"", pointer, 0, size});
             return std::move(self);
         }
 
@@ -94,15 +106,10 @@ namespace aula {
             return (const char*)(self->head + from);
         }
 
-        /// get binary size (bytes)
-        inline size_t binary_size(binary_t *self) {
-            return self->tail - self->head;
-        }
-
         /// append data (only new binary)
         inline void binary_push(binary_t *self, const void *data, size_t size) {
             if (!self->data.empty()) {
-                size_t oldsize = self->tail - self->head;
+                size_t oldsize = self->size;
                 binary_resize(self, oldsize + size);
                 memcpy((void*)(self->head + oldsize), data, size);
             }
@@ -164,7 +171,7 @@ namespace aula {
         inline std::string binary_getstr(binary_t *self, size_t size) {
             std::string dest;
             if (size == 0) return "";
-            if (self->head + self->iter + size >= self->tail) return (const char*)(self->head + self->iter);
+            if (self->iter + size >= self->size) return (const char*)(self->head + self->iter);
             dest.resize(size + 1);
             memcpy((void*)dest.c_str(), (const void*)(self->head + self->iter), size);
             binary_seek(self, size, seekfrom::cur);

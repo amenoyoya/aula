@@ -1,34 +1,17 @@
-﻿#include "../lua.hpp"
+﻿#include "aula.hpp"
 
 #define LUA_PROMPT   "> "  /* Interactive prompt. */
 #define LUA_PROMPT2  ">> " /* Continuation prompt. */
 #define LUA_MAXINPUT 512  /* Max. input line length. */
 
 inline void write_stdout(const std::string &message) {
-    fputws(u8towcs(message).c_str(), stdout);
+    aula::io::putstr(stdout, message);
     fflush(stdout);
 }
 
 inline void write_stderr(const std::string &message) {
-    fputws(u8towcs(message).c_str(), stderr);
+    aula::io::putstr(stderr, message);
     fflush(stderr);
-}
-
-inline std::string read_stdin(size_t size) {
-    #ifdef _WINDOWS
-        wchar_t *buffer = new wchar_t[size + 1];
-        std::string result = wcstou8(fgetws(buffer, size, stdin));
-
-        delete[] buffer;
-    #else
-        char *buffer = new char[size * 3 + 1];
-        std::string result = fgets(buffer, size * 3, stdin);
-
-        delete[] buffer;
-    #endif
-    // remove the end of line
-    result.erase(result.end() - 1);
-    return std::move(result);
 }
 
 static void l_message(const std::string &pname, const std::string &msg) {
@@ -83,7 +66,7 @@ static int incomplete(lua_State *L, int status) {
 static int pushline(lua_State *L, int firstline) {
     write_prompt(L, firstline);
 
-    std::string buf = read_stdin(LUA_MAXINPUT);
+    std::string buf = aula::io::getstr(stdin, LUA_MAXINPUT);
     size_t len = buf.size();
     if (len > 0) {
         if (len > 0 && buf[len-1] == '\n') buf[len-1] = '\0';
@@ -123,24 +106,27 @@ static int docall(lua_State *L, int narg, int clear) {
     return status;
 }
 
-/// @public
-void lua_dotty(sol::state &lua, const std::string &progname) {
-    int status;
-    while ((status = loadline(lua)) != -1) {
-        if (status == LUA_OK) status = docall(lua, 0, 0);
-        report(lua, status, progname.c_str());
-        if (status == LUA_OK && lua_gettop(lua) > 0) {  /* any result to print? */
-            lua_getglobal(lua, "print");
-            lua_insert(lua, 1);
-            if (lua_pcall(lua, lua_gettop(lua)-1, 0, 0) != 0)
-                l_message(progname,
-                    lua_pushfstring(
-                        lua, "error calling " LUA_QL("print") " (%s)",
-                        lua_tostring(lua, -1)
-                    )
-                );
+namespace aula {
+    namespace lua {
+        void dotty(sol::state &lua, const std::string &progname) {
+            int status;
+            while ((status = loadline(lua)) != -1) {
+                if (status == LUA_OK) status = docall(lua, 0, 0);
+                report(lua, status, progname.c_str());
+                if (status == LUA_OK && lua_gettop(lua) > 0) {  /* any result to print? */
+                    lua_getglobal(lua, "print");
+                    lua_insert(lua, 1);
+                    if (lua_pcall(lua, lua_gettop(lua)-1, 0, 0) != 0)
+                        l_message(progname,
+                            lua_pushfstring(
+                                lua, "error calling " LUA_QL("print") " (%s)",
+                                lua_tostring(lua, -1)
+                            )
+                        );
+                }
+            }
+            lua_settop(lua, 0);  /* clear stack */
+            write_stdout("\n");
         }
     }
-    lua_settop(lua, 0);  /* clear stack */
-    write_stdout("\n");
 }

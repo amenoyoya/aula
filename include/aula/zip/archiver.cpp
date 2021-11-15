@@ -9,7 +9,7 @@ namespace aula {
         /// @private get file size
         inline size_t __get_filesize(const char *filename) {
             auto fp = fs::file_open(filename, "rb");
-            return fp ? fs::file_size(fp.get()) : 0;
+            return fp ? fp->size : 0;
         }
 
         /// @private get current date time
@@ -164,7 +164,7 @@ namespace aula {
             {
                 return false;
             }
-            bool result = ZIP_OK == zipWriteInFileInZip((zipFile)self->handler, io::binary_tostr(data), io::binary_size(data));
+            bool result = ZIP_OK == zipWriteInFileInZip((zipFile)self->handler, io::binary_tostr(data), data->size);
             zipCloseFileInZip((zipFile)self->handler);
             return result;
         }

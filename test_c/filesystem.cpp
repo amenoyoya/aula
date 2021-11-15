@@ -6,7 +6,7 @@
 inline std::string readfile(const std::string &filename) {
     auto fp = aula::fs::file_open(filename, "rb");
     assert(fp != nullptr);
-    auto data = aula::fs::file_read(fp.get(), aula::fs::file_size(fp.get()));
+    auto data = aula::fs::file_read(fp.get(), fp->size);
     return data == nullptr ? "" : aula::io::binary_tostr(data.get());
 }
 

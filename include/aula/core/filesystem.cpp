@@ -128,9 +128,76 @@ namespace aula {
 
         /*** ================================================== ***/
         /*** file manager ***/
-        std::string file_readline(FILE *self) {
+
+        /// @private custom file deleter
+        inline void file_deleter(file_t *self) {
+            if (!self) return;
+            if (self->handler) fclose((FILE*)self->handler);
+            delete self;
+            self = nullptr;
+        }
+
+        /// @private custom pipe deleter
+        inline void pipe_deleter(file_t *self) {
+            if (!self) return;
+            if (self->handler) {
+                #ifdef _WINDOWS
+                    _pclose((FILE*)self->handler);
+                #else
+                    pclose((FILE*)self->handler);
+                #endif
+            }
+            delete self;
+            self = nullptr;
+        }
+
+        /// @private get file size
+        inline size_t file_size(FILE *self) {
+            size_t size, cur = ftell(self); // store current position
+            fseek(self, 0, io::seekfrom::tail);
+            size = ftell(self);
+            fseek(self, cur, io::seekfrom::head); // restore to original position
+            return size;
+        }
+
+        file_ptr file_open(const std::string &filename, const std::string &mode) {
+            // auto create parent directories if write-mode
+            if (mode.find("w") != std::string::npos) mkdir(path::parentdir(filename));
+            // force to fopen in binary-mode
+            FILE *fp =
+            #ifdef _WINDOWS
+                _wfopen(
+                    std::move(string::u8towcs(filename)).c_str(),
+                    std::move(string::u8towcs(mode.find("b") == std::string::npos ? mode + "b" : mode)).c_str()
+                );
+            #else
+                fopen(
+                    filename.c_str(),
+                    (mode.find("b") == std::string::npos ? mode + "b" : mode).c_str()
+                );
+            #endif
+            if (!fp) return nullptr;
+            // get file size
+            size_t size = file_size(fp);
+            return file_ptr(new file_t { (unsigned long)fp, size }, file_deleter);
+        }
+
+        file_ptr pipe_open(const std::string &procname, const std::string &mode) {
+            unsigned long handler =
+            #ifdef _WINDOWS
+                (unsigned long)_wpopen(std::move(string::u8towcs(procname)).c_str(), std::move(string::u8towcs(mode)).c_str());
+            #else
+                (unsigned long)popen(procname.c_str(), mode.c_str());
+            #endif
+            if (handler == 0) return nullptr;
+            return file_ptr(new file_t { handler, 0 }, pipe_deleter);
+        }
+
+        std::string file_readline(file_t *self) {
+            if (!self || !self->handler) return "";
+            
             std::string line;
-            line.reserve(256);
+            line.reserve(512);
             for (int c = file_readchar(self); c != EOF; c = file_readchar(self)) {
                 // break loop if crlf found
                 if (c == '\r') {

@@ -19,8 +19,8 @@ teal.config = {
 local original_teal_process_string = teal.process_string
 
 function teal.process_string(input, is_lua, env, filename)
-    package.__chunk = filename
-    package.__dir = filename and Aula.Path.getParentDirectory(filename:same("@", true, 1) and filename:sub(2) or filename)
+    package.__file = filename and (filename:sub(1, 1) == "@" and filename:sub(2) or filename)
+    package.__dir = package.__file and fs.path.parentdir(package.__file)
     return original_teal_process_string(
         input:sub(1, 3) == "\xEF\xBB\xBF" and input:sub(4) or input,
         is_lua,
@@ -37,12 +37,12 @@ function teal.process(filename, env)
        return env.loaded[filename]
     end
 
-    local input = Aula.IO.readFile(filename)
-    if input:getSize() == 0 then
+    local input = fs.readfile(filename)
+    if input:len() == 0 then
        return nil, "failed to read file: '" .. filename .. "'"
     end
  
-    return teal.process_string(input:toString(), Aula.Path.getExtension(filename) ~= ".tl", env, filename)
+    return teal.process_string(input, fs.path.ext(filename) ~= ".tl", env, filename)
 end
 
 -- @private filter warnings
@@ -68,12 +68,12 @@ local function report_errors(category, errors)
     end
     if #errors > 0 then
         local n = #errors
-        Aula.IO.Stderr:write "========================================"
-        Aula.IO.Stderr:write(n .. " " .. category .. (n ~= 1 and "s" or "") .. ":")
+        ffi.C.fputws(string.u8towcs"========================================\n", io.stderr)
+        ffi.C.fputws(string.u8towcs(n .. " " .. category .. (n ~= 1 and "s" or "") .. ":\n"), io.stderr)
         for _, err in ipairs(errors) do
-            Aula.IO.Stderr:write(err.filename .. ":" .. err.y .. ":" .. err.x .. ": " .. (err.msg or ""))
+            ffi.C.fputws(string.u8towcs(err.filename .. ":" .. err.y .. ":" .. err.x .. ": " .. (err.msg or "") .. "\n"), io.stderr)
         end
-        Aula.IO.Stderr:write "" -- \n
+        ffi.C.fputws(string.u8towcs"\n", io.stderr)
         return true
     end
     return false
@@ -159,16 +159,16 @@ function load(code, chunkname, mode, env)
         return f, err
     end
     return function()
-        -- store previous package.__chunk, package.__dir
-        local __chunk = package.__chunk
+        -- store previous package.__file, package.__dir
+        local __file = package.__file
         local __dir = package.__dir
-        -- enable to get current script info from package.__chunk, package.__dir
-        package.__chunk = chunkname
-        package.__dir = chunkname and Aula.Path.getParentDirectory(chunkname:same("@", true, 1) and chunkname:sub(2) or chunkname)
+        -- enable to get current script info from package.__file, package.__dir
+        package.__file = chunkname and (chunkname:sub(1, 1) == "@" and chunkname:sub(2) or chunkname)
+        package.__dir = package.__file and fs.path.parentdir(package.__file)
         
         local result = f()
-        -- restore package.__chunk, package.__dir
-        package.__chunk = __chunk
+        -- restore package.__file, package.__dir
+        package.__file = __file
         package.__dir = __dir
 
         return result
@@ -184,7 +184,7 @@ end
 -- @param {table} env (default: _ENV)
 -- @returns {function|nil, string} loader, error_message
 function loadfile(filename, mode, env)
-    local ext = Aula.Path.getExtension(filename)
+    local ext = fs.path.ext(filename)
     -- transpile teal => lua and load
     if ext == ".tl" then
         local luacode, err = teal.transpile(filename)
@@ -195,7 +195,7 @@ function loadfile(filename, mode, env)
         return load(luacode, "@" .. filename .. ".lua", mode, env)
     end
     -- load lua (plain source code / compiled byte-code)
-    return load(Aula.IO.readFile(filename):toString(), "@" .. filename, mode, env)
+    return load(fs.readfile(filename), "@" .. filename, mode, env)
 end
 
 -- override dofile
@@ -219,7 +219,7 @@ function require(module_name)
     local module = original_require(module_name)
     -- remove package.loaded[module_name] if <module_name> has "/"
     -- => always search package from relative path
-    if module_name:find("/") then
+    if module_name:find"/" then
         package.loaded[module_name] = nil
     end
     return module
@@ -229,9 +229,8 @@ end
 -- * support for requiring relative package
 -- @returns {string, userdata, table} module_name, file_handler( has :close() method ), errors
 local function try_search_module(filepath, tried)
-    local file = Aula.IO.File.new(filepath)
-
-    if file:getState() == Aula.Object.State.ACTIVE then
+    local file = fs.open(filepath)
+    if file == nil then
         return filepath, file, nil
     end
     table.insert(tried, "no file '" .. filepath .. "'")
@@ -242,9 +241,9 @@ function teal.search_module(module_name, search_dtl)
     
     -- search from relative path if <module_name> has "/"
     -- * in this case: "." not replaced into "/"
-    if module_name:find("/") and package.__dir then
-        for entry in package.path:gmatch("[^;]+") do
-            local filepath = Aula.Path.complete(package.__dir .. "/" .. entry:replace("?", module_name))
+    if module_name:find"/" and package.__dir then
+        for entry in package.path:gmatch"[^;]+" do
+            local filepath = fs.path.complete(package.__dir .. "/" .. entry:replace("?", module_name))
             local p, f, e = try_search_module(filepath, tried)
             if p then
                 return p, f, e
@@ -253,7 +252,7 @@ function teal.search_module(module_name, search_dtl)
     else
         -- normal search
         module_name = module_name:gsub("%.", "/") -- "." => "/"
-        for entry in package.path:gmatch("[^;]+") do
+        for entry in package.path:gmatch"[^;]+" do
             local filepath = entry:replace("?", module_name)
             local p, f, e = try_search_module(filepath, tried)
             if p then
@@ -284,13 +283,12 @@ end)
 --      + luaopen_{module_name}
 --      + luaopen_module
 local function try_search_dynlib(filepath, err)
-    if Aula.Path.isFile(filepath) then
-        local loader = package.loadlib(filepath, "luaopen_" .. Aula.Path.getBaseStem(filepath))
-
-        if not loader then
+    if fs.path.isfile(filepath) then
+        local loader = package.loadlib(filepath, "luaopen_" .. fs.path.stem(filepath))
+        if loader == nil then
             loader = package.loadlib(filepath, "luaopen_module")
         end
-        if not loader then
+        if loader == nil then
             error("entry point function not found in module file '" .. filepath .. "'.")
         end
         return loader, err
@@ -303,23 +301,19 @@ table.insert(package.loaders, 2, function (module_name)
 
     -- search from relative path if <module_name> has "/"
     -- * in this case: "." not replaced into "/"
-    if module_name:find("/") and package.__dir then
-        for entry in package.cpath:gmatch("[^;]+") do
-            local filepath = Aula.Path.complete(package.__dir .. "/" .. entry:replace("?", module_name))
+    if module_name:find"/" and package.__dir then
+        for entry in package.cpath:gmatch"[^;]+" do
+            local filepath = fs.path.complete(package.__dir .. "/" .. entry:replace("?", module_name))
             local loader; loader, err = try_search_dynlib(filepath, err)
-            if loader then
-                return loader
-            end
+            if loader then return loader end
         end
     else
         -- normal search
         module_name = module_name:gsub("%.", "/") -- "." => "/"
-        for entry in package.cpath:gmatch("[^;]+") do
+        for entry in package.cpath:gmatch"[^;]+" do
             local filepath = entry:replace("?", module_name)
             local loader; loader, err = try_search_dynlib(filepath, err)
-            if loader then
-                return loader
-            end
+            if loader then return loader end
         end
     end
     return err

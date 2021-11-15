@@ -10,12 +10,12 @@ namespace aula {
             auto fp = fs::file_open(filename, "rb");
             if (!fp) return false;
 
-            size_t size = fs::file_size(fp.get()) - arc->size;
+            size_t size = fp->size - arc->size;
             auto bin = fs::file_read(fp.get(), size);
 
             // overwrite
             if (nullptr == (fp = fs::file_open(filename, "wb"))) return false;
-            return io::binary_size(bin.get()) == fs::file_write(fp.get(), bin.get());
+            return bin->size == fs::file_write(fp.get(), bin.get());
         }
 
         /// @private compress the directory (base)
