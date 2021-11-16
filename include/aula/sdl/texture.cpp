@@ -1,4 +1,4 @@
-﻿#include <aula/sdl/application.hpp>
+﻿#include "application.hpp"
 
 namespace Aula {
     namespace SDL {
