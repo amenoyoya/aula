@@ -55,8 +55,8 @@ namespace aula {
                 "external_attr", &aula::zip::fileinfo_t::external_attr,
                 "created_at", &aula::zip::fileinfo_t::created_at,
                 "filename", &aula::zip::fileinfo_t::filename,
-                "comment", &aula::zip::fileinfo_t::comment
-                // "content", &aula::zip::fileinfo_t::content
+                "comment", &aula::zip::fileinfo_t::comment,
+                "getcontent", &aula::zip::fileinfo_t::getcontent
             );
             unz.new_usertype<aula::zip::filepos_t>("filepos_t",
                 "pos_in_zip", &aula::zip::filepos_t::pos_in_zip,

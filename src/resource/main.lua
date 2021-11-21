@@ -64,8 +64,8 @@ table.insert(package.loaders, 1, function (module_name)
         if __resource:locate_name(modname) then
             local info = __resource:info(true)
 
-            if info.content:len() > 0 then
-                local loader, err = load(info.content, "@aula://" .. module_name)
+            if info then
+                local loader, err = load(info:getcontent():tostr(), "@aula://" .. module_name)
                 if loader == nil then error(err) end
                 return loader
             end

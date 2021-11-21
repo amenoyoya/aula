@@ -145,6 +145,18 @@ end
 
 --- overload lua standard load function ---
 
+-- original lua functions
+aula = aula or {}
+aula.lua = {
+    load = load,
+    loadile = loadfile,
+    dofile = dofile,
+    require = require,
+}
+
+-- disable loadstring
+loadstring = nil
+
 -- override load
 -- * support for getting current script info
 -- @param {string} code
@@ -152,9 +164,8 @@ end
 -- @param {string} mode (default: "bt"): {"b": binary mode, "t": text mode, "bt": binary + text mode}
 -- @param {table} env (default: _ENV)
 -- @returns {function, string} loader, error_message
-local original_load = load
 function load(code, chunkname, mode, env)
-    local f, err = original_load(code, chunkname, mode, env)
+    local f, err = aula.lua.load(code, chunkname, mode, env)
     if f == nil then
         return f, err
     end
@@ -174,6 +185,7 @@ function load(code, chunkname, mode, env)
         return result
     end, err
 end
+print(load)
 
 -- override loadfile
 -- @param {string} filename
@@ -214,9 +226,8 @@ end
 -- override require
 -- * support for requiring relative package
 -- * <module_name> will be changed into full path if <module_name> has "/"
-local original_require = require
 function require(module_name)
-    local module = original_require(module_name)
+    local module = aula.lua.require(module_name)
     -- remove package.loaded[module_name] if <module_name> has "/"
     -- => always search package from relative path
     if module_name:find"/" then

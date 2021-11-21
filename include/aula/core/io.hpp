@@ -96,16 +96,6 @@ namespace aula {
             if (!self->data.empty()) self->data.reserve(size);
         }
 
-        /// get raw pointer address
-        inline unsigned long binary_addr(binary_t *self, unsigned long from = 0) {
-            return self->head + from;
-        }
-
-        /// get raw pointer as string
-        inline const char *binary_tostr(binary_t *self, unsigned long from = 0) {
-            return (const char*)(self->head + from);
-        }
-
         /// append data (only new binary)
         inline void binary_push(binary_t *self, const void *data, size_t size) {
             if (!self->data.empty()) {

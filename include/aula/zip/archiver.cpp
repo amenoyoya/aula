@@ -164,7 +164,7 @@ namespace aula {
             {
                 return false;
             }
-            bool result = ZIP_OK == zipWriteInFileInZip((zipFile)self->handler, io::binary_tostr(data), data->size);
+            bool result = ZIP_OK == zipWriteInFileInZip((zipFile)self->handler, (const void*)data->head, data->size);
             zipCloseFileInZip((zipFile)self->handler);
             return result;
         }
@@ -249,7 +249,7 @@ namespace aula {
             // get uncompressed content
             if (UNZ_OK != unzOpenCurrentFile3((unzFile)self->handler, nullptr, nullptr, 0, password.empty() ? nullptr : password.c_str())) return nullptr;
             pinfo->content = io::binary_new(0, pinfo->uncompressed_size);
-            if (pinfo->uncompressed_size != unzReadCurrentFile((unzFile)self->handler, (void*)io::binary_addr(pinfo->content.get()), pinfo->uncompressed_size)) {
+            if (pinfo->uncompressed_size != unzReadCurrentFile((unzFile)self->handler, (void*)pinfo->content->head, pinfo->uncompressed_size)) {
                 unzCloseCurrentFile((unzFile)self->handler);
                 return nullptr;
             }

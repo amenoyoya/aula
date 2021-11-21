@@ -59,7 +59,7 @@ namespace aula {
         inline io::binary_ptr file_read(file_t *self, size_t size) {
             if (!self || !self->handler) return nullptr;
             auto data = io::binary_new(0, size);
-            size_t read = fread((void*)io::binary_addr(data.get()), 1, size, (FILE*)self->handler);
+            size_t read = fread((void*)data->head, 1, size, (FILE*)self->handler);
             return read > 0 ? std::move(data) : nullptr;
         }
 
@@ -71,7 +71,7 @@ namespace aula {
         /// write binary data
         // @returns written size
         inline size_t file_write(file_t *self, io::binary_t *data) {
-            return self && self->handler ? fwrite(io::binary_tostr(data), 1, data->size, (FILE*)self->handler) : 0;
+            return self && self->handler ? fwrite((const void*)data->head, 1, data->size, (FILE*)self->handler) : 0;
         }
         
         /// seek file pointer

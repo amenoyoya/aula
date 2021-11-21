@@ -167,7 +167,7 @@ namespace aula {
             binary_seek(self, size, seekfrom::head); // original binary iterator seek to crc32 position
             if (binary_crc32(data.get()) != binary_getu32(self)) {
                 // key is wrong
-                memcpy(pointer, binary_tostr(original.get()), size); // restore original data
+                memcpy(pointer, (const void*)original->head, size); // restore original data
                 return false;
             }
             // remove crc32

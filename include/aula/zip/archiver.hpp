@@ -47,6 +47,8 @@ namespace aula {
             datetime_t      created_at; // created date time
             std::string     filename, comment;
             io::binary_ptr  content; // uncompressed content data
+
+            io::binary_t*   getcontent() { return this->content.get(); }
         };
 
         /// local file position in the zip file

@@ -34,7 +34,7 @@ __main() {
         return 1;
     }
 
-    auto script = lua.load_buffer(aula::io::binary_tostr(info->content.get()), info->uncompressed_size, "@" + args[0]);
+    auto script = lua.load_buffer((const char*)info->content->head, info->uncompressed_size, "@" + args[0]);
     if (!script.valid()) {
         sol::error err = script;
         _fputs(stderr, err.what());

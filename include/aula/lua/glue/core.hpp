@@ -33,14 +33,6 @@ namespace aula {
                 "close", aula::io::binary_close,
                 "resize", aula::io::binary_resize,
                 "reserve", aula::io::binary_reserve,
-                "addr", sol::overload(
-                    [](aula::io::binary_t *self, size_t from) { return aula::io::binary_addr(self, from); },
-                    [](aula::io::binary_t *self) { return aula::io::binary_addr(self); }
-                ),
-                "tostr", sol::overload(
-                    [](aula::io::binary_t *self, size_t from) { return aula::io::binary_tostr(self, from); },
-                    [](aula::io::binary_t *self) { return aula::io::binary_tostr(self); }
-                ),
                 "push", aula::io::binary_push,
                 "pushint", sol::overload(
                     [](aula::io::binary_t *self, int data, size_t size) { return aula::io::binary_pushint(self, data, size); },
@@ -81,6 +73,13 @@ namespace aula {
                     [](aula::io::binary_t *self, const std::string &key) { return aula::io::binary_decrypt(self, key); }
                 )
             );
+            // aula::io::binary_t::tostr
+            lua.safe_script(R"(
+                io.binary_t.tostr = function(self, from)
+                    from = from or 0
+                    return ffi.string(ffi.cast("const char*", self.head + from), self.size - from)
+                end
+            )", "@stdlib://io");
             io.set_function("binary_new", aula::io::binary_new);
             io.set_function("binary_newstr", sol::overload(
                 [] (const char *data, size_t size) { return aula::io::binary_newstr(data, size); },
@@ -121,7 +120,10 @@ namespace aula {
             path.set_function("basename", aula::path::basename);
             path.set_function("stem", aula::path::stem);
             path.set_function("ext", aula::path::ext);
-            path.set_function("parentdir", aula::path::parentdir);
+            path.set_function("parentdir", sol::overload(
+                [](const std::string &path, bool isFullPathRequired) { return aula::path::parentdir(path, isFullPathRequired); },
+                [](const std::string &path) { return aula::path::parentdir(path); }
+            ));
             path.set_function("isfile", aula::path::isfile);
             path.set_function("isdir", aula::path::isdir);
             path.set_function("complete", aula::path::complete);
@@ -130,7 +132,10 @@ namespace aula {
             path.set_function("remove_slash", aula::path::remove_slash);
 
             /*** filesystem library ***/
-            fs.set_function("copyfile", aula::fs::copyfile);
+            fs.set_function("copyfile", sol::overload(
+                [](const std::string &src, const std::string &dest, bool isOverwrite) { return aula::fs::copyfile(src, dest, isOverwrite); },
+                [](const std::string &src, const std::string &dest) { return aula::fs::copyfile(src, dest); }
+            ));
             fs.set_function("rmfile", aula::fs::rmfile);
             fs.set_function("mkdir", aula::fs::mkdir);
             fs.set_function("copydir", aula::fs::copydir);

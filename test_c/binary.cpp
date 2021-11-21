@@ -16,7 +16,7 @@ inline std::unique_ptr<aula::io::binary_t> readfile(const std::string &filename)
     auto bin = aula::io::binary_new(0, size);
 
     fseek(fp, 0, aula::io::seekfrom::head);
-    fread((void*)binary_addr(bin.get()), 1, size, fp);
+    fread((void*)bin->head, 1, size, fp);
     fclose(fp);
     return std::move(bin);
 }
