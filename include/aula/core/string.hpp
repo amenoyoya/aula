@@ -31,13 +31,13 @@ namespace aula {
                 iCh1 = ((long)(*chBuffer)) & 0x00ff;
                 iCh1 = ~iCh1; // bit inversion
                 if (iCh1 & 0x0080) sizeBytes = 1; /* 0aaabbbb */
-                else if (iCh1 & 0x0040) return false; /* error */
+                else if (iCh1 & 0x0040) return L""; /* error */
                 else if (iCh1 & 0x0020) sizeBytes = 2; /* 110aaabb 10bbcccc */
                 else if (iCh1 & 0x0010) sizeBytes = 3; /* 1110aaaa 10bbbbcc 10ccdddd */
                 else if (iCh1 & 0x0008) sizeBytes = 4; /* no code in UTF-16 */
                 else if (iCh1 & 0x0004) sizeBytes = 5; /* no code in UTF-16 */
                 else if (iCh1 & 0x0002) sizeBytes = 6; /* no code in UTF-16 */
-                else return false; /* error */
+                else return L""; /* error */
                 // branch processing by sizeBytes
                 switch (sizeBytes) {
                 case 1:
@@ -93,7 +93,7 @@ namespace aula {
                 else if((wcWork1 <= ((wchar_t)0x007f))) sizeBytes = 1; /* 0x0000 to 0x007f */
                 else if((((wchar_t)0x0080) <= wcWork1) && (wcWork1 <= ((wchar_t)0x07ff))) sizeBytes = 2; /* 0x0080 to 0x07ff */
                 else if((((wchar_t)0x0800) <= wcWork1)) sizeBytes = 3; /* 0x0800 to 0xffff */
-                else return false; /* error */
+                else return ""; /* error */
                 // branch processing by sizeBytes
                 switch (sizeBytes) {
                 case 1:

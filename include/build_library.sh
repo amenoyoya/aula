@@ -1,28 +1,15 @@
 cd $(dirname $0)
 
-export CPLUS_INCLUDE_PATH="$(pwd)/../../include:$(pwd)/../../extlib/LuaJIT-2.1.0-beta3/src:$(pwd)/../../extlib/zlib-1.2.8:$(pwd)/../../extlib/sol2-3.2.2"
+export CPLUS_INCLUDE_PATH="$(pwd):$(pwd)/../extlib/LuaJIT-2.1.0-beta3/src:$(pwd)/../extlib/zlib-1.2.8:$(pwd)/../extlib/sol2-3.2.2"
 
-# build core library
-cd ./core/encoding
-g++ -c -O2 -s -DNDEBUG *.cpp
+# generate lua stdlib codes
+/bin/bash ./aula/lua/_generate_stdlib_code.sh
 
-cd ../system
-g++ -c -O2 -s -DNDEBUG *.cpp
+# build aula library
+g++ -c -O2 -std=c++17 -s -DNDEBUG ./aula/core/*.cpp
+g++ -c -O2 -std=c++17 -s -DNDEBUG ./aula/zip/*.cpp
+g++ -c -O2 -std=c++17 -s -DNDEBUG ./aula/lua/*.cpp
 
-cd ../path
-g++ -c -O2 -s -DNDEBUG *.cpp
-
-cd ../io
-g++ -c -O2 -s -DNDEBUG *.cpp
-
-cd ..
-ar rcs libaula_core.a ./encoding/*.o ./system/*.o ./path/*.o ./io/*.o
-rm ./encoding/*.o ./system/*.o ./path/*.o ./io/*.o
-mv libaula_core.a ../../../dist/lib/x64/
-
-# build zip library
-cd ../zip
-g++ -c -O2 -s -DNDEBUG *.cpp
-ar rcs libaula_zip.a *.o
-rm *.o
-mv libaula_zip.a ../../../dist/lib/x64/
+ar rcs libaula.a ./*.o
+rm ./*.o
+mv libaula.a ../dist/lib/x64/

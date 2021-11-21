@@ -4,8 +4,7 @@
 
 namespace aula {
     namespace core {
-        template<typename State>
-        void openlib(State &lua) {
+        inline void openlib(sol::state &lua) {
             /*** string library ***/
             auto string = lua["string"].get_or_create<sol::table>();
             string.set_function("u8towcs", aula::string::u8towcs);

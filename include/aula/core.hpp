@@ -27,7 +27,7 @@
     int aula_main(std::vector<std::string> &args);\
     int main(int argc, char **argv) {\
         aula::io::initlocale();\
-        std::vector<std::string> args = std::move(os_cmdline(argv, argc));\
+        std::vector<std::string> args = std::move(aula::os::cmdline(argv, argc));\
         return aula_main(args);\
     }\
     int aula_main(std::vector<std::string> &args)

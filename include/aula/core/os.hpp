@@ -7,6 +7,7 @@
     #include <mmsystem.h>
 #else
     #include <sys/time.h>
+    #include <unistd.h>
 #endif
 
 namespace aula {
@@ -16,7 +17,7 @@ namespace aula {
             #ifdef _WINDOWS
                 return _wsystem(std::move(string::u8towcs(cmd)).c_str());
             #else
-                return /*WEXITSTATUS(*/ system(cmd) /*)*/;
+                return /*WEXITSTATUS(*/ system(cmd.c_str()) /*)*/;
             #endif
         }
 
@@ -45,7 +46,7 @@ namespace aula {
              #ifdef _WINDOWS
                 return FALSE != SetEnvironmentVariableW(std::move(string::u8towcs(envname)).c_str(), std::move(string::u8towcs(val)).c_str());
             #else
-                return 0 == putenv((char*)(envname + "=" + val).c_str());
+                return 0 == ::putenv((char*)(envname + "=" + val).c_str());
             #endif
         }
 
@@ -60,7 +61,7 @@ namespace aula {
                 GetEnvironmentVariable(name.c_str(), (wchar_t*)buf.c_str(), size);
                 return std::move(string::wcstou8(buf));
             #else
-                return getenv(envname.c_str());
+                return ::getenv(envname.c_str());
             #endif
         }
 
@@ -69,7 +70,7 @@ namespace aula {
             #ifdef _WINDOWS
                 return FALSE != SetCurrentDirectoryW(std::move(string::u8towcs(dir)).c_str());
             #else
-                return 0 == chdir(dir.c_str());
+                return 0 == ::chdir(dir.c_str());
             #endif
         }
         
@@ -83,7 +84,7 @@ namespace aula {
                 return std::move(string::wcstou8(buffer.c_str()));
             #else
                 char dest[1024];
-                return getcwd(dest, 1024);
+                return ::getcwd(dest, 1024);
             #endif
         }
 

@@ -23,8 +23,7 @@ Or you must edit `./vcvars.bat` file following to your Visual C++ environment.
 
 ### Build Aula libraries
 ```powershell
-> .\src\lib\build_library.bat
-> .\src\lib\build_lua_library.bat
+> .\include\build_library.bat
 ```
 
 ### Build Aula main engine & Test
@@ -79,8 +78,7 @@ $ /bin/bash ./extlib/build_zlib.sh
 
 ### Build Aula libraries
 ```bash
-$ /bin/bash ./src/lib/build_library.sh
-$ /bin/bash ./src/lib/build_lua_library.sh
+$ /bin/bash ./include/build_library.sh
 ```
 
 ### Build Aula main engine & Test

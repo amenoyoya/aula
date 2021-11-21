@@ -4,8 +4,7 @@
 
 namespace aula {
     namespace zip {
-        template<typename State>
-        void openlib(State &lua) {
+        inline void openlib(sol::state &lua) {
             auto fs = lua["fs"].get_or_create<sol::table>();
             auto zip = fs["zip"].get_or_create<sol::table>();
             auto unz = fs["unz"].get_or_create<sol::table>();
