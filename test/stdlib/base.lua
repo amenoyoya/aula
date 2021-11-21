@@ -1,5 +1,5 @@
 ﻿-- just return current file information
 return {
-    filename = package.__chunk,
+    filename = package.__file,
     directory = package.__dir
 }

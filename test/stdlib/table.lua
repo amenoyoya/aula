@@ -1,4 +1,4 @@
-﻿--- テーブルシリアライズ
+﻿--- table serializer
 local tbl = {
     test = [==[
 Hello,
@@ -24,19 +24,18 @@ assert(serialized == [==[
 printf("✅ OK table.serialize\n%s\n", serialized)
 
 
---- 新規クラス'App'作成
+--- new class 'App' definition
 local App = class {
-    constructor = function(self, id) -- コンストラクタ
-        -- classメンバはコンストラクタで宣言する
+    constructor = function(self, id)
         self.id = 0
         self.map = {}
         self:setID(id)
     end,
-    destructor = function(self) -- デストラクタ
+    destructor = function(self)
         self.map = {}
         print "✅ OK: class App.destructor called"
     end,
-    operator = { -- 演算子定義
+    operator = {
         __newindex = function(self, index, val) self.map[index] = val end,
         __index = function(self, index) return self.map[index]  end,
     },
@@ -55,15 +54,15 @@ app = nil
 collectgarbage "collect" --> "✅ OK: class App.destructor called"
 
 
---- クラス'App'を継承して'MyApp'クラス作成
+--- App extended class 'MyApp' definition
 local MyApp = class(App) {
     constructor = function(self, ...)
-        -- コンストラクタで親クラスのコンストラクタを呼ぶ
+        -- call parent constructor
         App.constructor(self, ...)
     end,
     
     setID = function(self, id)
-        -- オーバーライドした親クラスのメソッドは直接指定で呼び出す
+        -- overrided parent method must be called directly
         App.setID(self, (id or 0) * 5)
     end
 }

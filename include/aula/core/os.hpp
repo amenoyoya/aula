@@ -30,7 +30,7 @@ namespace aula {
         }
 
         /// get current os time [milli seconds]
-        inline unsigned long gettime() {
+        inline unsigned long systime() {
             #ifdef _WINDOWS
                 return timeGetTime();
             #else

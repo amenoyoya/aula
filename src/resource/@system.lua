@@ -37,7 +37,7 @@ function teal.process(filename, env)
        return env.loaded[filename]
     end
 
-    local input = fs.readfile(filename)
+    local input = fs.readfile(filename):tostr()
     if input:len() == 0 then
        return nil, "failed to read file: '" .. filename .. "'"
     end
@@ -185,7 +185,6 @@ function load(code, chunkname, mode, env)
         return result
     end, err
 end
-print(load)
 
 -- override loadfile
 -- @param {string} filename
@@ -207,7 +206,9 @@ function loadfile(filename, mode, env)
         return load(luacode, "@" .. filename .. ".lua", mode, env)
     end
     -- load lua (plain source code / compiled byte-code)
-    return load(fs.readfile(filename), "@" .. filename, mode, env)
+    local code = fs.readfile(filename)
+    if code == nil then return nil, "failed to load file '" .. filename .. "'" end
+    return load(code:tostr(), "@" .. filename, mode, env)
 end
 
 -- override dofile
@@ -240,11 +241,12 @@ end
 -- * support for requiring relative package
 -- @returns {string, userdata, table} module_name, file_handler( has :close() method ), errors
 local function try_search_module(filepath, tried)
-    local file = fs.open(filepath)
-    if file == nil then
-        return filepath, file, nil
+    local file = fs.file_open(filepath)
+    if file then
+        return filepath, file, tried
     end
     table.insert(tried, "no file '" .. filepath .. "'")
+    return nil, nil, tried
 end
 
 function teal.search_module(module_name, search_dtl)
@@ -275,7 +277,7 @@ function teal.search_module(module_name, search_dtl)
 end
 
 -- appendix loader for teal.search_module
-table.insert(package.loaders, 1, function (modname)
+table.insert(package.loaders, 2, function (modname)
     local filename, file, tried = teal.search_module(modname)
     if not filename then
         return "\n\t" .. table.concat(tried or {}, "\n\t")
@@ -307,7 +309,7 @@ local function try_search_dynlib(filepath, err)
     return nil, err .. "\n\tno file '" .. filepath .. "'"
 end
 
-table.insert(package.loaders, 2, function (module_name)
+table.insert(package.loaders, 3, function (module_name)
     local err = ""
 
     -- search from relative path if <module_name> has "/"

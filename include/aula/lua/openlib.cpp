@@ -16,6 +16,8 @@ static unsigned char core_lib_code[] = {
     #include "stdlib/table.cpp"
 }, string_lib_code[] = {
     #include "stdlib/string.cpp"
+}, filesystem_lib_code[] = {
+    #include "stdlib/filesystem.cpp"
 }, lpeg_lib_code[] = {
     #include "stdlib/lpeg.cpp"
 };
@@ -54,6 +56,7 @@ static bool regist_lua_stdlib(sol::state &lua, std::string *errorMessage) {
     if (!exec_lua_buffer(lua, (const char *)core_lib_code, sizeof(core_lib_code), "@stdlib://core", errorMessage)) return false;
     if (!exec_lua_buffer(lua, (const char *)table_lib_code, sizeof(table_lib_code), "@stdlib://table", errorMessage)) return false;
     if (!exec_lua_buffer(lua, (const char *)string_lib_code, sizeof(string_lib_code), "@stdlib://string", errorMessage)) return false;
+    if (!exec_lua_buffer(lua, (const char *)filesystem_lib_code, sizeof(filesystem_lib_code), "@stdlib://filesystem", errorMessage)) return false;
     if (!exec_lua_buffer(lua, (const char *)lpeg_lib_code, sizeof(lpeg_lib_code), "@stdlib://lpeg", errorMessage)) return false;
     return true;
 }

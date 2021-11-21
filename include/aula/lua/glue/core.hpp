@@ -95,7 +95,7 @@ namespace aula {
             auto os = lua["os"].get_or_create<sol::table>();
             os.set_function("execute", aula::os::execute);
             os.set_function("sleep", aula::os::sleep);
-            os.set_function("gettime", aula::os::gettime);
+            os.set_function("systime", aula::os::systime);
             os.set_function("setenv", aula::os::setenv);
             os.set_function("getenv", aula::os::getenv);
             os.set_function("setcwd", aula::os::setcwd);

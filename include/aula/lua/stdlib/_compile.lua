@@ -23,6 +23,7 @@ end
 compile("core.lua", "core.cpp", "@stdlib://core")
 compile("table.lua", "table.cpp", "@stdlib://table")
 compile("string.lua", "string.cpp", "@stdlib://string")
+compile("filesystem.lua", "filesystem.cpp", "@stdlib://filesystem")
 compile("lpeg.lua", "lpeg.cpp", "@stdlib://lpeg")
 
 -- loading order of libraries
@@ -30,5 +31,6 @@ compile("lpeg.lua", "lpeg.cpp", "@stdlib://lpeg")
     1. core
     2. table
     3. string
-    4. lpeg
+    4. filesystem
+    5. lpeg
 ]]

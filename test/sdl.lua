@@ -8,7 +8,7 @@ size_t SDL_RWclose(unsigned long);
 ]]
 
 local buf = ffi.new("uint8_t[?]", 256)
-local file = ffi.C.SDL_RWFromFile(package.__chunk, "r");
+local file = ffi.C.SDL_RWFromFile(package.__file, "r");
 
 if file == 0 then
     error(ffi.C.SDL_GetError())

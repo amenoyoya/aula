@@ -15,4 +15,3 @@ cd %~dp0
 lib.exe /OUT:"libaula.lib" /NOLOGO *.obj
 move libaula.lib ..\dist\lib\x86\
 del *.obj
-del *.exp

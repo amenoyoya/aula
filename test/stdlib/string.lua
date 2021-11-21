@@ -15,13 +15,11 @@ printf("✅ OK: utf8.char(12355) = %s\n", char)
 local text = "❓ hello, 世界 ❗"
 assert(text:u8len() == 13)
 assert(text:len() == 21)
-assert(Aula.Encoding.getEncodingName(text) == "UTF-8")
 printf(
-    "✅ OK: string.u8len, string.len\n\ttext: %s\n\tlength: %d\n\tbytes: %d\n\tencoding: %s\n",
+    "✅ OK: string.u8len, string.len\n\ttext: %s\n\tlength: %d\n\tbytes: %d\n",
     text,
     text:u8len(),
-    text:len(),
-    Aula.Encoding.getEncodingName(text)
+    text:len()
 )
 
 local index1, index2, found = text:u8find("([a-zA-Z]+)")
@@ -56,7 +54,3 @@ printf("✅ OK: string.u8lower\n\ttext: %s\n", lower)
 local rev = text:u8reverse()
 assert(rev == "❗ 界世 ,olleh ❓")
 printf("✅ OK: string.u8reverse\n\ttext: %s\n", rev)
-
-local text2 = "❓ hELlO, 世界 ❗"
-assert(text:same(text2, false))
-printf("✅ OK: string.equal\n\ttext: %s\n\ttext2: %s\n", text, text2)
